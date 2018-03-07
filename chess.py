@@ -1,6 +1,7 @@
 class Board(object):
     cut_pieces = []
     filled_positions = {}
+    all_available_moves = {}
     end_of_game = 0
     current_player = 'w'
 
@@ -19,11 +20,29 @@ class Board(object):
     def display_board(self):
         for y in range(7,-1,-1):
             for x in range(8):
+                print str((x,y)),
                 if (x,y) in Board.filled_positions.keys():
-                    print str((x,y)),self.get_piece((x,y)).name+'\t',
+                    print self.get_piece((x,y)).name+'\t',
                 else:
-                    print str((x,y)),'\t\t',
+                    print '\t\t',
             print '\n'
+
+    def get_white_moves(self):
+        white_available_moves = {}
+        for piece in Board.filled_positions.values():
+            if piece.color == 'w':
+                white_available_moves[piece.name+'('+str(piece.x_pos)+','+str(piece.y_pos)+')'] = piece.get_moves()
+
+        return white_available_moves
+
+    def get_black_moves(self):
+        black_available_moves = {}
+        for piece in Board.filled_positions.values():
+            if piece.color == 'b':
+                black_available_moves[piece.name+'('+str(piece.x_pos)+','+str(piece.y_pos)+')'] = piece.get_moves()
+
+        return black_available_moves
+            
 
     def make_move(self,piece,x_pos,y_pos):
         (x_start,y_start) = self.get_position(piece)
@@ -151,6 +170,14 @@ class Knight(object):
                 if abs(step1) != abs(step2) and step1 != 0 and step2 != 0:
                     x_pos = self.x_pos+step1
                     y_pos = self.y_pos+step2
+                    try:
+                        if Board().get_piece((x_pos,y_pos)).color == self.color:
+                            break
+                        else:
+                            possible_positions.append((x_pos,y_pos))
+                            break
+                    except:
+                        pass
                     if x_pos in range(8) and y_pos in range(8):
                         possible_positions.append((x_pos,y_pos))
 
@@ -414,6 +441,14 @@ class King(object):
             for y_step in range(-1,2):
                 x_pos = self.x_pos+x_step
                 y_pos = self.y_pos+y_step
+                try:
+                    if Board().get_piece((x_pos,y_pos)).color == self.color:
+                        break
+                    else:
+                        possible_positions.append((x_pos,y_pos))
+                        break
+                except:
+                    pass
                 if not (x_pos == self.x_pos and y_pos == self.y_pos):
                     if x_pos in range(8) and y_pos in range(8):
                         possible_positions.append((x_pos,y_pos))
