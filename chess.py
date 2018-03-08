@@ -1,11 +1,11 @@
 import sys
 class Board(object):
-    cut_pieces = []
-    filled_positions = {}
-    end_of_game = 0
-    current_player = 'w'
-
     def __init__(self):
+        self.cut_pieces = []
+        self.filled_positions = {}
+        self.end_of_game = 0
+        self.current_player = 'w'
+    
         self.set_board(Rook('w',0,0,self))
         self.set_board(Knight('w',1,0,self))
         self.set_board(Bishop('w',2,0,self))
@@ -41,7 +41,7 @@ class Board(object):
         self.set_board(Rook('b',0,7,self))
 
     def get_user_input(self):
-        print Board.current_player+' has to play'
+        print self.current_player+' has to play'
         from_pos = raw_input('Enter the from position: ')
         from_x_pos = int(from_pos.split(',')[0].strip())
         from_y_pos = int(from_pos.split(',')[1].strip())
@@ -62,7 +62,7 @@ class Board(object):
         return (from_x_pos,from_y_pos,to_x_pos,to_y_pos)
 
     def get_piece(self,(x_pos,y_pos)):
-        return Board.filled_positions.get((x_pos,y_pos),None)
+        return self.filled_positions.get((x_pos,y_pos),None)
 
     def get_position(self,piece):
         return (piece.x_pos,piece.y_pos)
@@ -70,14 +70,14 @@ class Board(object):
     def set_board(self,piece):
         x_pos = piece.x_pos
         y_pos = piece.y_pos
-        Board.filled_positions[(x_pos,y_pos)] = piece
-        return Board.filled_positions
+        self.filled_positions[(x_pos,y_pos)] = piece
+        return self.filled_positions
 
     def display_board(self):
         for y in range(7,-1,-1):
             for x in range(8):
                 print str((x,y)),
-                if (x,y) in Board.filled_positions.keys():
+                if (x,y) in self.filled_positions.keys():
                     print self.get_piece((x,y)).name+'\t',
                 else:
                     print '\t\t',
@@ -85,24 +85,24 @@ class Board(object):
 
     def get_white_moves(self):
         white_available_moves = {}
-        for piece in Board.filled_positions.values():
+        for piece in self.filled_positions.values():
             if piece.color == 'w':
-                white_available_moves[piece.name+'('+str(piece.x_pos)+','+str(piece.y_pos)+')'] = piece.get_moves()
+                white_available_moves[piece] = piece.get_moves()
 
         return white_available_moves
 
     def get_black_moves(self):
         black_available_moves = {}
-        for piece in Board.filled_positions.values():
+        for piece in self.filled_positions.values():
             if piece.color == 'b':
-                black_available_moves[piece.name+'('+str(piece.x_pos)+','+str(piece.y_pos)+')'] = piece.get_moves()
+                black_available_moves[piece] = piece.get_moves()
 
         return black_available_moves
 
     def get_all_moves(self):
         white_available_moves = []
         black_available_moves = []
-        for piece in Board.filled_positions.values():
+        for piece in self.filled_positions.values():
             if piece.color == 'b':
                 for val in piece.get_moves():
                     black_available_moves.append(val)
@@ -116,19 +116,25 @@ class Board(object):
     def make_move(self,piece,x_pos,y_pos):
         (x_start,y_start) = self.get_position(piece)
 
-        if (x_pos,y_pos) in piece.get_moves():
+        if (x_pos,y_pos) in piece.get_moves() and piece.color == self.current_player:
             old_piece = self.get_piece((x_pos,y_pos))
             
             if old_piece is None:
-                Board.filled_positions[(x_pos,y_pos)] = piece
-                Board.filled_positions.pop((x_start,y_start))
+                self.filled_positions[(x_pos,y_pos)] = piece
+                self.filled_positions.pop((x_start,y_start))
+                if self.current_player == 'w':
+                       self.current_player = 'b'
+                else:
+                    self.current_player = 'w'
             else:
                 if old_piece.color == piece.color:
                     return False
                 else:
-                    Board.cut_pieces.append(old_piece)
-                    Board.filled_positions[(x_pos,y_pos)] = piece
-                    Board.filled_positions.pop((x_start,y_start))
+                    self.cut_pieces.append(old_piece)
+                    self.filled_positions[(x_pos,y_pos)] = piece
+                    self.filled_positions.pop((x_start,y_start))
+                    if self.current_player == 'w':
+                       self.current_player = 'b'
         else:
             return False
 
@@ -139,7 +145,7 @@ class Board(object):
         except:
             pass
                 
-        return Board.filled_positions
+        return self.filled_positions
 
 class Rook(object):
     def __init__(self,color,x_pos,y_pos,board):
@@ -592,7 +598,7 @@ class TwoPlayer(object):
         
 
     def start_play(self):
-        while Board.end_of_game == 0:
+        while self.board.end_of_game == 0:
             self.board.display_board()
 
             get = False
@@ -607,16 +613,7 @@ class TwoPlayer(object):
 
             piece_to_move = self.board.get_piece((from_x_pos,from_y_pos))
             if piece_to_move is not None:
-                if piece_to_move.color.lower() == Board.current_player.lower():
-                    if self.board.make_move(piece_to_move,to_x_pos,to_y_pos):
-                        if Board.current_player.lower() == 'w':
-                           Board.current_player = 'b'
-                        else:
-                            Board.current_player = 'w'
-                    else:
-                        print 'Invalid Move'
-                else:
-                    print 'Wrong piece moved'
+                self.board.make_move(piece_to_move,to_x_pos,to_y_pos)
             else:
                 print 'Invalid Move'
             
