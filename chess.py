@@ -1,9 +1,65 @@
+import sys
 class Board(object):
     cut_pieces = []
     filled_positions = {}
-    all_available_moves = {}
     end_of_game = 0
     current_player = 'w'
+
+    def __init__(self):
+        self.set_board(Rook('w',0,0,self))
+        self.set_board(Knight('w',1,0,self))
+        self.set_board(Bishop('w',2,0,self))
+        self.set_board(Queen('w',3,0,self))
+        self.set_board(King('w',4,0,self))
+        self.set_board(Bishop('w',5,0,self))
+        self.set_board(Knight('w',6,0,self))
+        self.set_board(Rook('w',7,0,self))
+        self.set_board(Pawn('w',0,1,self))
+        self.set_board(Pawn('w',1,1,self))
+        self.set_board(Pawn('w',2,1,self))
+        self.set_board(Pawn('w',3,1,self))
+        self.set_board(Pawn('w',4,1,self))
+        self.set_board(Pawn('w',5,1,self))
+        self.set_board(Pawn('w',6,1,self))
+        self.set_board(Pawn('w',7,1,self))
+
+        self.set_board(Pawn('b',0,6,self))
+        self.set_board(Pawn('b',1,6,self))
+        self.set_board(Pawn('b',2,6,self))
+        self.set_board(Pawn('b',3,6,self))
+        self.set_board(Pawn('b',4,6,self))
+        self.set_board(Pawn('b',5,6,self))
+        self.set_board(Pawn('b',6,6,self))
+        self.set_board(Pawn('b',7,6,self))
+        self.set_board(Rook('b',7,7,self))
+        self.set_board(Knight('b',6,7,self))
+        self.set_board(Bishop('b',5,7,self))
+        self.set_board(Queen('b',3,7,self))
+        self.set_board(King('b',4,7,self))
+        self.set_board(Bishop('b',2,7,self))
+        self.set_board(Knight('b',1,7,self))
+        self.set_board(Rook('b',0,7,self))
+
+    def get_user_input(self):
+        print Board.current_player+' has to play'
+        from_pos = raw_input('Enter the from position: ')
+        from_x_pos = int(from_pos.split(',')[0].strip())
+        from_y_pos = int(from_pos.split(',')[1].strip())
+        if not from_x_pos in range(8) and from_y_pos in range(8):
+            return False
+
+        try:
+            print self.get_piece((from_x_pos,from_y_pos)).get_moves()
+        except AttributeError:
+            return False
+
+        to_pos= raw_input('Enter the to position: ')
+        to_x_pos = int(to_pos.split(',')[0].strip())
+        to_y_pos = int(to_pos.split(',')[1].strip())
+        if not to_x_pos in range(8) and to_y_pos in range(8):
+            return False
+
+        return (from_x_pos,from_y_pos,to_x_pos,to_y_pos)
 
     def get_piece(self,(x_pos,y_pos)):
         return Board.filled_positions.get((x_pos,y_pos),None)
@@ -42,6 +98,19 @@ class Board(object):
                 black_available_moves[piece.name+'('+str(piece.x_pos)+','+str(piece.y_pos)+')'] = piece.get_moves()
 
         return black_available_moves
+
+    def get_all_moves(self):
+        white_available_moves = []
+        black_available_moves = []
+        for piece in Board.filled_positions.values():
+            if piece.color == 'b':
+                for val in piece.get_moves():
+                    black_available_moves.append(val)
+            if piece.color == 'w':
+                for val in piece.get_moves():
+                    white_available_moves.append(val)                    
+
+        return {'w':white_available_moves,'b':black_available_moves}
             
 
     def make_move(self,piece,x_pos,y_pos):
@@ -73,13 +142,14 @@ class Board(object):
         return Board.filled_positions
 
 class Rook(object):
-    def __init__(self,color,x_pos,y_pos):
+    def __init__(self,color,x_pos,y_pos,board):
         self.color = color.lower()
         self.name = self.color+'_R'
         self.x_pos = x_pos
         self.y_pos = y_pos
         self.point = 5
         self.is_first_move = True
+        self.board = board
 
     def get_moves(self):
         possible_positions = []
@@ -90,7 +160,7 @@ class Rook(object):
             x_pos = self.x_pos+x_step
 
             try:
-                if Board().get_piece((x_pos,y_pos)).color == self.color:
+                if self.board.get_piece((x_pos,y_pos)).color == self.color:
                     break
                 else:
                     possible_positions.append((x_pos,y_pos))
@@ -107,7 +177,7 @@ class Rook(object):
             x_pos = self.x_pos+x_step
 
             try:
-                if Board().get_piece((x_pos,y_pos)).color == self.color:
+                if self.board.get_piece((x_pos,y_pos)).color == self.color:
                     break
                 else:
                     possible_positions.append((x_pos,y_pos))
@@ -124,7 +194,7 @@ class Rook(object):
             y_pos = self.y_pos+y_step
 
             try:
-                if Board().get_piece((x_pos,y_pos)).color == self.color:
+                if self.board.get_piece((x_pos,y_pos)).color == self.color:
                     break
                 else:
                     possible_positions.append((x_pos,y_pos))
@@ -141,7 +211,7 @@ class Rook(object):
             y_pos = self.y_pos+y_step
 
             try:
-                if Board().get_piece((x_pos,y_pos)).color == self.color:
+                if self.board.get_piece((x_pos,y_pos)).color == self.color:
                     break
                 else:
                     possible_positions.append((x_pos,y_pos))
@@ -155,12 +225,13 @@ class Rook(object):
         return possible_positions
 
 class Knight(object):
-    def __init__(self,color,x_pos,y_pos):
+    def __init__(self,color,x_pos,y_pos,board):
         self.color = color.lower()
         self.name = self.color+'_H'
         self.x_pos = x_pos
         self.y_pos = y_pos
         self.point = 5
+        self.board = board
 
     def get_moves(self):
         possible_positions = []
@@ -171,7 +242,7 @@ class Knight(object):
                     x_pos = self.x_pos+step1
                     y_pos = self.y_pos+step2
                     try:
-                        if Board().get_piece((x_pos,y_pos)).color == self.color:
+                        if self.board.get_piece((x_pos,y_pos)).color == self.color:
                             break
                         else:
                             possible_positions.append((x_pos,y_pos))
@@ -184,12 +255,13 @@ class Knight(object):
         return possible_positions
 
 class Bishop(object):
-    def __init__(self,color,x_pos,y_pos):
+    def __init__(self,color,x_pos,y_pos,board):
         self.color = color.lower()
         self.name = self.color+'_B'
         self.x_pos = x_pos
         self.y_pos = y_pos
         self.point = 5
+        self.board = board
 
     def get_moves(self):
         possible_positions = []
@@ -201,7 +273,7 @@ class Bishop(object):
             y_pos = self.y_pos+step
 
             try:
-                if Board().get_piece((x_pos,y_pos)).color == self.color:
+                if self.board.get_piece((x_pos,y_pos)).color == self.color:
                     break
                 else:
                     possible_positions.append((x_pos,y_pos))
@@ -219,7 +291,7 @@ class Bishop(object):
             y_pos = self.y_pos+step
 
             try:
-                if Board().get_piece((x_pos,y_pos)).color == self.color:
+                if self.board.get_piece((x_pos,y_pos)).color == self.color:
                     break
                 else:
                     possible_positions.append((x_pos,y_pos))
@@ -237,7 +309,7 @@ class Bishop(object):
             y_pos = self.y_pos+step
 
             try:
-                if Board().get_piece((x_pos,y_pos)).color == self.color:
+                if self.board.get_piece((x_pos,y_pos)).color == self.color:
                     break
                 else:
                     possible_positions.append((x_pos,y_pos))
@@ -255,7 +327,7 @@ class Bishop(object):
             y_pos = self.y_pos+step
 
             try:
-                if Board().get_piece((x_pos,y_pos)).color == self.color:
+                if self.board.get_piece((x_pos,y_pos)).color == self.color:
                     break
                 else:
                     possible_positions.append((x_pos,y_pos))
@@ -269,12 +341,13 @@ class Bishop(object):
         return possible_positions
 
 class Queen(object):
-    def __init__(self,color,x_pos,y_pos):
+    def __init__(self,color,x_pos,y_pos,board):
         self.color = color.lower()
         self.name = self.color+'_Q'
         self.x_pos = x_pos
         self.y_pos = y_pos
         self.point = 10
+        self.board = board
     
     def get_moves(self):
         possible_positions = []
@@ -285,7 +358,7 @@ class Queen(object):
             x_pos = self.x_pos+x_step
 
             try:
-                if Board().get_piece((x_pos,y_pos)).color == self.color:
+                if self.board.get_piece((x_pos,y_pos)).color == self.color:
                     break
                 else:
                     possible_positions.append((x_pos,y_pos))
@@ -302,7 +375,7 @@ class Queen(object):
             x_pos = self.x_pos+x_step
 
             try:
-                if Board().get_piece((x_pos,y_pos)).color == self.color:
+                if self.board.get_piece((x_pos,y_pos)).color == self.color:
                     break
                 else:
                     possible_positions.append((x_pos,y_pos))
@@ -319,7 +392,7 @@ class Queen(object):
             y_pos = self.y_pos+y_step
 
             try:
-                if Board().get_piece((x_pos,y_pos)).color == self.color:
+                if self.board.get_piece((x_pos,y_pos)).color == self.color:
                     break
                 else:
                     possible_positions.append((x_pos,y_pos))
@@ -336,7 +409,7 @@ class Queen(object):
             y_pos = self.y_pos+y_step
 
             try:
-                if Board().get_piece((x_pos,y_pos)).color == self.color:
+                if self.board.get_piece((x_pos,y_pos)).color == self.color:
                     break
                 else:
                     possible_positions.append((x_pos,y_pos))
@@ -354,7 +427,7 @@ class Queen(object):
             y_pos = self.y_pos+step
 
             try:
-                if Board().get_piece((x_pos,y_pos)).color == self.color:
+                if self.board.get_piece((x_pos,y_pos)).color == self.color:
                     break
                 else:
                     possible_positions.append((x_pos,y_pos))
@@ -372,7 +445,7 @@ class Queen(object):
             y_pos = self.y_pos+step
 
             try:
-                if Board().get_piece((x_pos,y_pos)).color == self.color:
+                if self.board.get_piece((x_pos,y_pos)).color == self.color:
                     break
                 else:
                     possible_positions.append((x_pos,y_pos))
@@ -390,7 +463,7 @@ class Queen(object):
             y_pos = self.y_pos+step
 
             try:
-                if Board().get_piece((x_pos,y_pos)).color == self.color:
+                if self.board.get_piece((x_pos,y_pos)).color == self.color:
                     break
                 else:
                     possible_positions.append((x_pos,y_pos))
@@ -408,7 +481,7 @@ class Queen(object):
             y_pos = self.y_pos+step
 
             try:
-                if Board().get_piece((x_pos,y_pos)).color == self.color:
+                if self.board.get_piece((x_pos,y_pos)).color == self.color:
                     break
                 else:
                     possible_positions.append((x_pos,y_pos))
@@ -422,7 +495,7 @@ class Queen(object):
         return possible_positions
 
 class King(object):
-    def __init__(self,color,x_pos,y_pos):
+    def __init__(self,color,x_pos,y_pos,board):
         self.color = color.lower()
         self.name = self.color+'_K'
         self.x_pos = x_pos
@@ -430,6 +503,22 @@ class King(object):
         self.point = 10
         self.is_first_move = True
         self.is_check = False
+        self.board = board
+
+    def check_for_check(self,possible_positions):
+        final_positions = possible_positions
+        for position in possible_positions:
+            if self.color == 'w':
+                for val in self.board.get_all_moves['b'].values:
+                    if position in val:
+                        final_positions.remove(position)
+            if self.color == 'b':
+                for val in self.board.get_all_moves['w'].values:
+                    if position in val:
+                        final_positions.remove(position)
+
+        print possible_positions
+        return final_positions              
 
     def get_moves(self):
         possible_positions = []
@@ -442,7 +531,7 @@ class King(object):
                 x_pos = self.x_pos+x_step
                 y_pos = self.y_pos+y_step
                 try:
-                    if Board().get_piece((x_pos,y_pos)).color == self.color:
+                    if self.board.get_piece((x_pos,y_pos)).color == self.color:
                         break
                     else:
                         possible_positions.append((x_pos,y_pos))
@@ -452,17 +541,20 @@ class King(object):
                 if not (x_pos == self.x_pos and y_pos == self.y_pos):
                     if x_pos in range(8) and y_pos in range(8):
                         possible_positions.append((x_pos,y_pos))
+
+        possible_positions = self.check_for_check(possible_positions)
                         
         return possible_positions
 
 class Pawn(object):
-    def __init__(self,color,x_pos,y_pos):
+    def __init__(self,color,x_pos,y_pos,board):
         self.color = color.lower()
         self.name = self.color+'_P'
         self.x_pos = x_pos
         self.y_pos = y_pos
         self.point = 1
         self.is_first_move = True
+        self.board = board
         
 
     def get_moves(self):
@@ -472,81 +564,51 @@ class Pawn(object):
         y_pos = self.y_pos
         if self.color.lower() == 'b':
             y_pos = self.y_pos-1
-            if self.is_first_move:
+            if self.is_first_move and self.board.get_piece((x_pos,self.y_pos-2)) is None:
                 possible_positions.append((x_pos,self.y_pos-2))
         else:
             y_pos = self.y_pos+1
-            if self.is_first_move:
+            if self.is_first_move and self.board.get_piece((x_pos,self.y_pos+2)) is None:
                 possible_positions.append((x_pos,self.y_pos+2))
 
         try:
-            Board().get_piece((x_pos,y_pos)).color
+            self.board.get_piece((x_pos,y_pos)).color
         except:
             possible_positions.append((x_pos,y_pos))
 
         for x_step in [-1,1]:
             x_pos = self.x_pos+x_step
             try:
-                if self.color != Board().get_piece((x_pos,y_pos)).color:
+                if self.color != self.board.get_piece((x_pos,y_pos)).color:
                     possible_positions.append((x_pos,y_pos))
             except:
                 pass
-            
+   
         return possible_positions
 
 class TwoPlayer(object):
     def __init__(self):
-        Board().set_board(Rook('w',0,0))
-        Board().set_board(Knight('w',1,0))
-        Board().set_board(Bishop('w',2,0))
-        Board().set_board(Queen('w',3,0))
-        Board().set_board(King('w',4,0))
-        Board().set_board(Bishop('w',5,0))
-        Board().set_board(Knight('w',6,0))
-        Board().set_board(Rook('w',7,0))
-        Board().set_board(Pawn('w',0,1))
-        Board().set_board(Pawn('w',1,1))
-        Board().set_board(Pawn('w',2,1))
-        Board().set_board(Pawn('w',3,1))
-        Board().set_board(Pawn('w',4,1))
-        Board().set_board(Pawn('w',5,1))
-        Board().set_board(Pawn('w',6,1))
-        Board().set_board(Pawn('w',7,1))
-
-        Board().set_board(Pawn('b',0,6))
-        Board().set_board(Pawn('b',1,6))
-        Board().set_board(Pawn('b',2,6))
-        Board().set_board(Pawn('b',3,6))
-        Board().set_board(Pawn('b',4,6))
-        Board().set_board(Pawn('b',5,6))
-        Board().set_board(Pawn('b',6,6))
-        Board().set_board(Pawn('b',7,6))
-        Board().set_board(Rook('b',7,7))
-        Board().set_board(Knight('b',6,7))
-        Board().set_board(Bishop('b',5,7))
-        Board().set_board(Queen('b',3,7))
-        Board().set_board(King('b',4,7))
-        Board().set_board(Bishop('b',2,7))
-        Board().set_board(Knight('b',1,7))
-        Board().set_board(Rook('b',0,7))
+        self.board = Board()
+        
 
     def start_play(self):
         while Board.end_of_game == 0:
-            Board().display_board()
-                
-            print Board.current_player+' has to play'
-            from_pos = raw_input('Enter the from position: ')
-            from_x_pos = int(from_pos.split(',')[0].strip())
-            from_y_pos = int(from_pos.split(',')[1].strip())
-            print Board().get_piece((from_x_pos,from_y_pos)).get_moves()
-            to_pos= raw_input('Enter the to position: ')
-            to_x_pos = int(to_pos.split(',')[0].strip())
-            to_y_pos = int(to_pos.split(',')[1].strip())
+            self.board.display_board()
 
-            piece_to_move = Board().get_piece((from_x_pos,from_y_pos))
+            get = False
+            while not get:
+                try:
+                    (from_x_pos,from_y_pos,to_x_pos,to_y_pos) = self.board.get_user_input()
+                    get = True
+                except KeyboardInterrupt:
+                    sys.exit()
+                except:
+                    get = False
+
+            piece_to_move = self.board.get_piece((from_x_pos,from_y_pos))
             if piece_to_move is not None:
                 if piece_to_move.color.lower() == Board.current_player.lower():
-                    if Board().make_move(piece_to_move,to_x_pos,to_y_pos):
+                    if self.board.make_move(piece_to_move,to_x_pos,to_y_pos):
                         if Board.current_player.lower() == 'w':
                            Board.current_player = 'b'
                         else:
