@@ -1,623 +1,65 @@
-import sys,copy
-class Board(object):
-    def __init__(self):
-        self.cut_pieces = []
-        self.filled_positions = {}
-        self.king_positions = {'w':'','b':''}
-        self.is_check = {'w':False,'b':False}
-        self.end_of_game = 0
-        self.current_player = 'w'
-    
-        self.set_board(Rook('w',0,0,self))
-        self.set_board(Knight('w',1,0,self))
-        self.set_board(Bishop('w',2,0,self))
-        self.set_board(Queen('w',3,0,self))
-        self.set_board(King('w',4,0,self))
-        self.set_board(Bishop('w',5,0,self))
-        self.set_board(Knight('w',6,0,self))
-        self.set_board(Rook('w',7,0,self))
-        self.set_board(Pawn('w',0,1,self))
-        self.set_board(Pawn('w',1,1,self))
-        self.set_board(Pawn('w',2,1,self))
-        self.set_board(Pawn('w',3,1,self))
-        self.set_board(Pawn('w',4,1,self))
-        self.set_board(Pawn('w',5,1,self))
-        self.set_board(Pawn('w',6,1,self))
-        self.set_board(Pawn('w',7,1,self))
-
-        self.set_board(Pawn('b',0,6,self))
-        self.set_board(Pawn('b',1,6,self))
-        self.set_board(Pawn('b',2,6,self))
-        self.set_board(Pawn('b',3,6,self))
-        self.set_board(Pawn('b',4,6,self))
-        self.set_board(Pawn('b',5,6,self))
-        self.set_board(Pawn('b',6,6,self))
-        self.set_board(Pawn('b',7,6,self))
-        self.set_board(Rook('b',7,7,self))
-        self.set_board(Knight('b',6,7,self))
-        self.set_board(Bishop('b',5,7,self))
-        self.set_board(Queen('b',3,7,self))
-        self.set_board(King('b',4,7,self))
-        self.set_board(Bishop('b',2,7,self))
-        self.set_board(Knight('b',1,7,self))
-        self.set_board(Rook('b',0,7,self))
-
-    def get_user_input(self):
-        print self.current_player+' has to play'
-        from_pos = raw_input('Enter the from position: ')
-        from_x_pos = int(from_pos.split(',')[0].strip())
-        from_y_pos = int(from_pos.split(',')[1].strip())
-        if not from_x_pos in range(8) and from_y_pos in range(8):
-            return False
-
-        try:
-            print self.get_piece((from_x_pos,from_y_pos)).get_moves()
-        except AttributeError,KeyboardInterrupt:
-            return False
-
-        to_pos= raw_input('Enter the to position: ')
-        to_x_pos = int(to_pos.split(',')[0].strip())
-        to_y_pos = int(to_pos.split(',')[1].strip())
-        if not to_x_pos in range(8) and to_y_pos in range(8):
-            return False
-
-        return (from_x_pos,from_y_pos,to_x_pos,to_y_pos)
-
-    def get_piece(self,(x_pos,y_pos)):
-        return self.filled_positions.get((x_pos,y_pos),None)
-
-    def get_position(self,piece):
-        return (piece.x_pos,piece.y_pos)
-
-    def set_board(self,piece):
-        x_pos = piece.x_pos
-        y_pos = piece.y_pos
-        self.filled_positions[(x_pos,y_pos)] = piece
-        if '_K' in piece.name:
-            self.king_positions[piece.name[0]] = (x_pos,y_pos)
-            
-        return self.filled_positions
-
-    def display_board(self):
-        for y in range(7,-1,-1):
-            for x in range(8):
-                print str((x,y)),
-                if (x,y) in self.filled_positions.keys():
-                    print self.get_piece((x,y)).name+'\t',
-                else:
-                    print '\t\t',
-            print '\n'
-
-    def get_white_moves(self):
-        white_available_moves = {}
-        for piece in self.filled_positions.values():
-            if piece.color == 'w':
-                white_available_moves[piece] = piece.get_moves()
-
-        return white_available_moves
-
-    def get_black_moves(self):
-        black_available_moves = {}
-        for piece in self.filled_positions.values():
-            if piece.color == 'b':
-                black_available_moves[piece] = piece.get_moves()
-
-        return black_available_moves
-
-    def make_move(self,piece,x_pos,y_pos,snapshot=''):
-        if snapshot == '':
-            snapshot = False
-        (x_start,y_start) = self.get_position(piece)
-
-        if self.is_check[self.current_player] and not snapshot:
-            temp_board = copy.deepcopy(self)
-
-            temp_board.make_move(piece,x_pos,y_pos,True)
-            if temp_board.is_check[self.current_player]:
-                return False
-            else:
-                print self.filled_positions
-                print '-------------------------------------------------------'
-                print temp_board.filled_positions
-
-        if '_K' in piece.name:
-            if 'b' in piece.color:
-                for pos in self.get_white_moves().values():
-                    if (x_pos,y_pos) == pos:
-                        return False
-            if 'w' in piece.color:
-                for pos in self.get_black_moves().values():
-                    if (x_pos,y_pos) in pos:
-                        return False
-
-        if (x_pos,y_pos) in piece.get_moves() and piece.color == self.current_player:
-            old_piece = self.get_piece((x_pos,y_pos))
-            
-            if old_piece is None:
-                self.filled_positions[(x_pos,y_pos)] = piece
-                self.filled_positions.pop((x_start,y_start))
-                if self.current_player == 'w':
-                       self.current_player = 'b'
-                else:
-                    self.current_player = 'w'
-            else:
-                if old_piece.color == piece.color:
-                    return False
-                else:
-                    self.cut_pieces.append(old_piece)
-                    self.filled_positions[(x_pos,y_pos)] = piece
-                    self.filled_positions.pop((x_start,y_start))
-                    if self.current_player == 'w':
-                       self.current_player = 'b'
-        else:
-            return False
-
-        piece.x_pos = x_pos
-        piece.y_pos = y_pos
-        try:
-            piece.is_first_move = False
-        except:
-            pass
-
-        if '_K' in piece.name:
-            self.king_positions[piece.name[0]] = (x_pos,y_pos)
-
-        if self.current_player == 'b':
-            for position in self.get_white_moves().values():
-                print self.king_positions[self.current_player],position
-                if self.king_positions[self.current_player] in position:
-                    self.is_check[self.current_player] = True
-                    break
-                else:
-                    self.is_check[self.current_player] = False
-        else:
-            for position in self.get_black_moves().values():
-                print self.king_positions[self.current_player],position
-                if self.king_positions[self.current_player] in position:
-                    self.is_check[self.current_player] = True
-                    break
-                else:
-                    self.is_check[self.current_player] = False
-
-        print self.is_check
-                
-        return self.filled_positions
-
-class Rook(object):
-    def __init__(self,color,x_pos,y_pos,board):
-        self.color = color.lower()
-        self.name = self.color+'_R'
-        self.x_pos = x_pos
-        self.y_pos = y_pos
-        self.point = 5
-        self.is_first_move = True
-        self.board = board
-
-    def get_moves(self,x_start='',y_start=''):
-        possible_positions = []
-
-        if x_start == '':
-            x_start = self.x_pos
-        if y_start == '':
-            y_start = self.y_pos
-
-        x_pos = x_start
-        y_pos = y_start
-        for x_step in range(1,8):
-            x_pos = x_start+x_step
-
-            try:
-                if self.board.get_piece((x_pos,y_pos)).color == self.color:
-                    break
-                else:
-                    possible_positions.append((x_pos,y_pos))
-                    break
-            except:
-                if x_pos in range(8) and y_pos in range(8):
-                    possible_positions.append((x_pos,y_pos))
-
-        x_pos = x_start
-        y_pos = y_start
-        for x_step in range(-1,-8,-1):
-            x_pos = x_start+x_step
-
-            try:
-                if self.board.get_piece((x_pos,y_pos)).color == self.color:
-                    break
-                else:
-                    possible_positions.append((x_pos,y_pos))
-                    break
-            except:
-                if x_pos in range(8) and y_pos in range(8):
-                    possible_positions.append((x_pos,y_pos))  
-
-        x_pos = x_start
-        y_pos = y_start
-        for y_step in range(1,8):
-            y_pos = y_start+y_step
-
-            try:
-                if self.board.get_piece((x_pos,y_pos)).color == self.color:
-                    break
-                else:
-                    possible_positions.append((x_pos,y_pos))
-                    break
-            except:
-                if x_pos in range(8) and y_pos in range(8):
-                    possible_positions.append((x_pos,y_pos))
-
-        x_pos = x_start
-        y_pos = y_start
-        for y_step in range(-1,-8,-1):
-            y_pos = y_start+y_step
-
-            try:
-                if self.board.get_piece((x_pos,y_pos)).color == self.color:
-                    break
-                else:
-                    possible_positions.append((x_pos,y_pos))
-                    break
-            except:
-                if x_pos in range(8) and y_pos in range(8):
-                    possible_positions.append((x_pos,y_pos))
-       
-        return possible_positions
-
-class Knight(object):
-    def __init__(self,color,x_pos,y_pos,board):
-        self.color = color.lower()
-        self.name = self.color+'_H'
-        self.x_pos = x_pos
-        self.y_pos = y_pos
-        self.point = 5
-        self.board = board
-
-    def get_moves(self,x_start='',y_start=''):
-        possible_positions = []
-
-        if x_start == '':
-            x_start = self.x_pos
-        if y_start == '':
-            y_start = self.y_pos
-        
-        for step1 in range(-2,3):
-            for step2 in range(-2,3):
-                if abs(step1) != abs(step2) and step1 != 0 and step2 != 0:
-                    x_pos = x_start+step1
-                    y_pos = y_start+step2
-                    try:
-                        if self.board.get_piece((x_pos,y_pos)).color == self.color:
-                            break
-                        else:
-                            possible_positions.append((x_pos,y_pos))
-                            break
-                    except:
-                        if x_pos in range(8) and y_pos in range(8):
-                            possible_positions.append((x_pos,y_pos))
-
-        return possible_positions
-
-class Bishop(object):
-    def __init__(self,color,x_pos,y_pos,board):
-        self.color = color.lower()
-        self.name = self.color+'_B'
-        self.x_pos = x_pos
-        self.y_pos = y_pos
-        self.point = 5
-        self.board = board
-
-    def get_moves(self,x_start='',y_start=''):
-        possible_positions = []
-
-        if x_start == '':
-            x_start = self.x_pos
-        if y_start == '':
-            y_start = self.y_pos
-
-        x_pos = x_start
-        y_pos = y_start
-        for step in range(1,8):
-            x_pos = x_start+step
-            y_pos = y_start+step
-
-            try:
-                if self.board.get_piece((x_pos,y_pos)).color == self.color:
-                    break
-                else:
-                    possible_positions.append((x_pos,y_pos))
-                    break
-            except:
-                if x_pos in range(8) and y_pos in range(8):
-                    possible_positions.append((x_pos,y_pos))
-
-        x_pos = x_start
-        y_pos = y_start
-        for step in range(-1,-8,-1):
-            x_pos = x_start+step
-            y_pos = y_start+step
-
-            try:
-                if self.board.get_piece((x_pos,y_pos)).color == self.color:
-                    break
-                else:
-                    possible_positions.append((x_pos,y_pos))
-                    break
-            except:
-                if x_pos in range(8) and y_pos in range(8):
-                    possible_positions.append((x_pos,y_pos))
-
-        x_pos = x_start
-        y_pos = y_start
-        for step in range(1,8):
-            x_pos = x_start-step
-            y_pos = y_start+step
-
-            try:
-                if self.board.get_piece((x_pos,y_pos)).color == self.color:
-                    break
-                else:
-                    possible_positions.append((x_pos,y_pos))
-                    break
-            except:
-                if x_pos in range(8) and y_pos in range(8):
-                    possible_positions.append((x_pos,y_pos))
-
-        x_pos = x_start
-        y_pos = y_start
-        for step in range(-1,-8,-1):
-            x_pos = x_start-step
-            y_pos = y_start+step
-
-            try:
-                if self.board.get_piece((x_pos,y_pos)).color == self.color:
-                    break
-                else:
-                    possible_positions.append((x_pos,y_pos))
-                    break
-            except:
-                if x_pos in range(8) and y_pos in range(8):
-                    possible_positions.append((x_pos,y_pos))
-                
-        return possible_positions
-
-class Queen(object):
-    def __init__(self,color,x_pos,y_pos,board):
-        self.color = color.lower()
-        self.name = self.color+'_Q'
-        self.x_pos = x_pos
-        self.y_pos = y_pos
-        self.point = 10
-        self.board = board
-    
-    def get_moves(self,x_start='',y_start=''):
-        possible_positions = []
-
-        if x_start == '':
-            x_start = self.x_pos
-        if y_start == '':
-            y_start = self.y_pos
-
-        x_pos = x_start
-        y_pos = y_start
-        for x_step in range(1,8):
-            x_pos = x_start+x_step
-
-            try:
-                if self.board.get_piece((x_pos,y_pos)).color == self.color:
-                    break
-                else:
-                    possible_positions.append((x_pos,y_pos))
-                    break
-            except:
-                if x_pos in range(8) and y_pos in range(8):
-                    possible_positions.append((x_pos,y_pos))
-
-        x_pos = x_start
-        y_pos = y_start
-        for x_step in range(-1,-8,-1):
-            x_pos = x_start+x_step
-
-            try:
-                if self.board.get_piece((x_pos,y_pos)).color == self.color:
-                    break
-                else:
-                    possible_positions.append((x_pos,y_pos))
-                    break
-            except:
-                if x_pos in range(8) and y_pos in range(8):
-                    possible_positions.append((x_pos,y_pos))  
-
-        x_pos = x_start
-        y_pos = y_start
-        for y_step in range(1,8):
-            y_pos = y_start+y_step
-
-            try:
-                if self.board.get_piece((x_pos,y_pos)).color == self.color:
-                    break
-                else:
-                    possible_positions.append((x_pos,y_pos))
-                    break
-            except:
-                if x_pos in range(8) and y_pos in range(8):
-                    possible_positions.append((x_pos,y_pos))
-
-        x_pos = x_start
-        y_pos = y_start
-        for y_step in range(-1,-8,-1):
-            y_pos = y_start+y_step
-
-            try:
-                if self.board.get_piece((x_pos,y_pos)).color == self.color:
-                    break
-                else:
-                    possible_positions.append((x_pos,y_pos))
-                    break
-            except:
-                if x_pos in range(8) and y_pos in range(8):
-                    possible_positions.append((x_pos,y_pos))
-
-        x_pos = x_start
-        y_pos = y_start
-        for step in range(1,8):
-            x_pos = x_start+step
-            y_pos = y_start+step
-
-            try:
-                if self.board.get_piece((x_pos,y_pos)).color == self.color:
-                    break
-                else:
-                    possible_positions.append((x_pos,y_pos))
-                    break
-            except:
-                if x_pos in range(8) and y_pos in range(8):
-                    possible_positions.append((x_pos,y_pos))
-
-        x_pos = x_start
-        y_pos = y_start
-        for step in range(-1,-8,-1):
-            x_pos = x_start+step
-            y_pos = y_start+step
-
-            try:
-                if self.board.get_piece((x_pos,y_pos)).color == self.color:
-                    break
-                else:
-                    possible_positions.append((x_pos,y_pos))
-                    break
-            except:
-                if x_pos in range(8) and y_pos in range(8):
-                    possible_positions.append((x_pos,y_pos))
-
-        x_pos = x_start
-        y_pos = y_start
-        for step in range(1,8):
-            x_pos = x_start-step
-            y_pos = y_start+step
-
-            try:
-                if self.board.get_piece((x_pos,y_pos)).color == self.color:
-                    break
-                else:
-                    possible_positions.append((x_pos,y_pos))
-                    break
-            except:
-                if x_pos in range(8) and y_pos in range(8):
-                    possible_positions.append((x_pos,y_pos))
-
-        x_pos = x_start
-        y_pos = y_start
-        for step in range(-1,-8,-1):
-            x_pos = x_start-step
-            y_pos = y_start+step
-
-            try:
-                if self.board.get_piece((x_pos,y_pos)).color == self.color:
-                    break
-                else:
-                    possible_positions.append((x_pos,y_pos))
-                    break
-            except:
-                if x_pos in range(8) and y_pos in range(8):
-                    possible_positions.append((x_pos,y_pos))
-            
-        return possible_positions
-
-class King(object):
-    def __init__(self,color,x_pos,y_pos,board):
-        self.color = color.lower()
-        self.name = self.color+'_K'
-        self.x_pos = x_pos
-        self.y_pos = y_pos
-        self.point = 10
-        self.is_first_move = True
-        self.board = board             
-
-    def get_moves(self,x_start='',y_start=''):
-        possible_positions = []
-
-        if x_start == '':
-            x_start = self.x_pos
-        if y_start == '':
-            y_start = self.y_pos
-
-        x_pos = x_start
-        y_pos = y_start
-
-        for x_step in range(-1,2):
-            for y_step in range(-1,2):
-                x_pos = x_start+x_step
-                y_pos = y_start+y_step
-                try:
-                    if self.board.get_piece((x_pos,y_pos)).color == self.color:
-                        pass
-                    else:
-                        possible_positions.append((x_pos,y_pos))                   
-                except:
-                    if not (x_pos == x_start and y_pos == y_start):
-                        if x_pos in range(8) and y_pos in range(8):
-                            possible_positions.append((x_pos,y_pos))
-                        
-        return possible_positions
-
-class Pawn(object):
-    def __init__(self,color,x_pos,y_pos,board):
-        self.color = color.lower()
-        self.name = self.color+'_P'
-        self.x_pos = x_pos
-        self.y_pos = y_pos
-        self.point = 1
-        self.is_first_move = True
-        self.board = board
-        
-
-    def get_moves(self,x_start='',y_start=''):
-        possible_positions = []
-
-        if x_start == '':
-            x_start = self.x_pos
-        if y_start == '':
-            y_start = self.y_pos
-
-        x_pos = x_start
-        y_pos = y_start
-        if self.color.lower() == 'b':
-            y_pos = y_start-1
-            if self.is_first_move and self.board.get_piece((x_pos,y_start-2)) is None:
-                possible_positions.append((x_pos,self.y_pos-2))
-        else:
-            y_pos = y_start+1
-            if self.is_first_move and self.board.get_piece((x_pos,y_start+2)) is None:
-                possible_positions.append((x_pos,self.y_pos+2))
-
-        try:
-            self.board.get_piece((x_pos,y_pos)).color
-        except:
-            possible_positions.append((x_pos,y_pos))
-
-        for x_step in [-1,1]:
-            x_pos = x_start+x_step
-            try:
-                if self.color != self.board.get_piece((x_pos,y_pos)).color:
-                    possible_positions.append((x_pos,y_pos))
-            except:
-                pass
-   
-        return possible_positions
+import sys
+from components import Board
 
 class TwoPlayer(object):
     def __init__(self):
-        self.board = Board()
-        
+        self.board = Board.Board()
+        self.end_of_game = 0
+        self.suggestions = True
 
+    def convert_to_coordinates(self,position):
+        try:
+            x = position.lower()[0]
+            y = int(position.lower()[1])
+
+            x_vals = ['','a','b','c','d','e','f','g','h']
+
+            if x in x_vals:
+                x = x_vals.index(x)
+
+            return x,y
+        except:
+            return False
+
+    def convert_to_position(self,coordinates):
+        x_vals = ['','A','B','C','D','E','F','G','H']
+        positions = []
+        
+        for (x_pos,y_pos) in coordinates:
+            x_pos = x_vals[x_pos]
+            y_pos = str(y_pos)
+            positions.append(x_pos+y_pos)
+
+        return positions
+
+    def get_user_input(self):
+        print self.board.current_player+' has to play'
+        try:
+            from_x_pos,from_y_pos = self.convert_to_coordinates(raw_input('Enter the from position: '))
+
+            if self.suggestions:
+                suggestions = self.board.get_piece((from_x_pos,from_y_pos)).get_moves()
+                if len(suggestions) > 0:
+                    for pos in self.convert_to_position(suggestions):
+                        print pos,
+                    print ''
+                else:
+                    return False
+                
+            to_x_pos,to_y_pos= self.convert_to_coordinates(raw_input('Enter the to position: '))
+            return (from_x_pos,from_y_pos,to_x_pos,to_y_pos)
+            
+        except AttributeError,KeyboardInterrupt:
+            return False
+        
     def start_play(self):
-        while self.board.end_of_game == 0:
+        while self.end_of_game == 0:
             self.board.display_board()
 
             get = True
             while get:
                 try:
-                    (from_x_pos,from_y_pos,to_x_pos,to_y_pos) = self.board.get_user_input()
+                    (from_x_pos,from_y_pos,to_x_pos,to_y_pos) = self.get_user_input()
                     get = False
                 except KeyboardInterrupt:
                     sys.exit()
@@ -625,12 +67,12 @@ class TwoPlayer(object):
                     get = True
 
             piece_to_move = self.board.get_piece((from_x_pos,from_y_pos))
-            if piece_to_move is not None:
-                self.board.make_move(piece_to_move,to_x_pos,to_y_pos)
+            if piece_to_move is not None and self.board.make_move(piece_to_move,to_x_pos,to_y_pos):
+                if self.board.is_checkmate():
+                    print self.board.opponent_player+' wins!!'
+                    sys.exit()
             else:
                 print 'Invalid Move'
             
-            
-
 if __name__ == '__main__':
     TwoPlayer().start_play()
