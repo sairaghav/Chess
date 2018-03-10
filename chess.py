@@ -7,72 +7,68 @@ class TwoPlayer(object):
         self.end_of_game = 0
         self.suggestions = True
 
-    def convert_to_coordinates(self,position):
-        try:
-            x = position.lower()[0]
-            y = int(position.lower()[1])
-
-            x_vals = ['','a','b','c','d','e','f','g','h']
-
-            if x in x_vals:
-                x = x_vals.index(x)
-
-            return x,y
-        except:
-            return False
-
-    def convert_to_position(self,coordinates):
-        x_vals = ['','A','B','C','D','E','F','G','H']
-        positions = []
-        
-        for (x_pos,y_pos) in coordinates:
-            x_pos = x_vals[x_pos]
-            y_pos = str(y_pos)
-            positions.append(x_pos+y_pos)
-
-        return positions
-
     def get_user_input(self):
-        print self.board.current_player+' has to play'
         try:
-            from_x_pos,from_y_pos = self.convert_to_coordinates(raw_input('Enter the from position: '))
+            from_x_pos,from_y_pos = self.board.convert_to_coordinates(raw_input('Enter the from position: '))
 
             if self.suggestions:
                 suggestions = self.board.get_piece((from_x_pos,from_y_pos)).get_moves()
                 if len(suggestions) > 0:
-                    for pos in self.convert_to_position(suggestions):
+                    for pos in self.board.convert_to_position(suggestions):
                         print pos,
                     print ''
                 else:
                     return False
                 
-            to_x_pos,to_y_pos= self.convert_to_coordinates(raw_input('Enter the to position: '))
+            to_x_pos,to_y_pos= self.board.convert_to_coordinates(raw_input('Enter the to position: '))
             return (from_x_pos,from_y_pos,to_x_pos,to_y_pos)
             
-        except AttributeError,KeyboardInterrupt:
+        except AttributeError:
             return False
         
     def start_play(self):
-        while self.end_of_game == 0:
-            self.board.display_board()
+        try:
+            white_player = raw_input('Enter the player playing white pieces: ')
+            black_player = raw_input('Enter the player playing black pieces: ')
 
-            get = True
-            while get:
-                try:
-                    (from_x_pos,from_y_pos,to_x_pos,to_y_pos) = self.get_user_input()
-                    get = False
-                except KeyboardInterrupt:
-                    sys.exit()
-                except:
-                    get = True
+            while self.end_of_game == 0:
+                
+                if self.board.current_player == 'w':
+                    self.board.display_board(white_player)
+                else:
+                    self.board.display_board(black_player)
 
-            piece_to_move = self.board.get_piece((from_x_pos,from_y_pos))
-            if piece_to_move is not None and self.board.make_move(piece_to_move,to_x_pos,to_y_pos):
-                if self.board.is_checkmate():
-                    print self.board.opponent_player+' wins!!'
-                    sys.exit()
+                get = True
+                while get:
+                    try:
+                        (from_x_pos,from_y_pos,to_x_pos,to_y_pos) = self.get_user_input()
+                        get = False
+                    except KeyboardInterrupt:
+                        sys.exit()
+                    except:
+                        get = True
+
+                piece_to_move = self.board.get_piece((from_x_pos,from_y_pos))
+                if piece_to_move is not None and self.board.make_move(piece_to_move,to_x_pos,to_y_pos):
+                    if self.board.is_checkmate():
+                        self.end_of_game = 1
+                else:
+                    print 'Invalid Move'
+
+            if self.board.opponent_player == 'w':
+                print white_player+' wins!!!'
             else:
-                print 'Invalid Move'
+                print black_player+' has to play'
+                
+            sys.exit()
+
+        except KeyboardInterrupt:
+            if self.board.opponent_player == 'w':
+                print white_player+' wins!!!'
+            else:
+                print black_player+' has to play'
+                
+            sys.exit()
             
 if __name__ == '__main__':
     TwoPlayer().start_play()

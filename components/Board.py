@@ -51,6 +51,34 @@ class Board(object):
     def get_position(self,piece):
         return (piece.x_pos,piece.y_pos)
 
+    def convert_to_coordinates(self,position):
+        if len(position) > 2:
+            return False
+        else:
+            try:
+                x = position.lower()[0]
+                y = int(position.lower()[1])
+
+                x_vals = ['','a','b','c','d','e','f','g','h']
+
+                if x in x_vals:
+                    x = x_vals.index(x)
+
+                return x,y
+            except:
+                return False
+
+    def convert_to_position(self,coordinates):
+        x_vals = ['','A','B','C','D','E','F','G','H']
+        positions = []
+        
+        for (x_pos,y_pos) in coordinates:
+            x_pos = x_vals[x_pos]
+            y_pos = str(y_pos)
+            positions.append(x_pos+y_pos)
+
+        return positions
+
     def set_board(self,piece):
         x_pos = piece.x_pos
         y_pos = piece.y_pos
@@ -60,7 +88,7 @@ class Board(object):
             
         return self.filled_positions
 
-    def display_board(self):
+    def display_board(self,player_name):
         x_header = ['','1','2','3','4','5','6','7','8','']
         y_header = ['','A','B','C','D','E','F','G','H','']
         for y in range(10,-1,-1):
@@ -78,6 +106,18 @@ class Board(object):
                     except:
                         pass
             print '\n'
+
+        print player_name+' has to play'
+        print 'Pieces not available: ',
+        if len(self.cut_pieces) == 0:
+            print 'Nil'
+        else:
+            for cut_piece in self.cut_pieces:
+                if self.current_player in cut_piece.name:
+                    print cut_piece.name,
+            print ''
+
+        print 'Points: '+str(self.points[self.current_player])
 
     def get_all_moves(self):
         all_available_moves = {}
@@ -100,6 +140,7 @@ class Board(object):
             if piece_to_reverse is not piece:
                 self.filled_positions[(x_pos,y_pos)] = piece_to_reverse
                 self.cut_pieces.remove(piece_to_reverse)
+                self.points[self.current_player] = self.points[self.current_player] - piece_to_reverse.point
             piece.x_pos = x_start
             piece.y_pos = y_start
             if '_K' in piece.name:
@@ -110,7 +151,6 @@ class Board(object):
         return True
 
     def is_checkmate(self):
-        print self.current_player,self.is_check
         if self.is_check[self.current_player]:
             for piece,positions in self.get_all_moves()[self.current_player].iteritems():
                 for position in positions:
@@ -125,10 +165,13 @@ class Board(object):
                     self.make_move(piece,x_pos,y_pos)
                     if not self.is_check[self.current_player]:
                         self.reverse_move(piece,x_start,y_start,x_pos,y_pos,piece_to_reverse)
+
                         temp = self.current_player
                         self.current_player = self.opponent_player
                         self.opponent_player = temp
+
                         return False
+
             return True
         else:
             return False
@@ -151,6 +194,7 @@ class Board(object):
                     self.cut_pieces.append(old_piece)
                     self.filled_positions[(x_pos,y_pos)] = piece
                     self.filled_positions.pop((x_start,y_start))
+                    self.points[self.current_player] += old_piece.point
  
             piece.x_pos = x_pos
             piece.y_pos = y_pos
