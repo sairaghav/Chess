@@ -9,7 +9,8 @@ class Board(object):
         self.is_check = {'w':False,'b':False}
         self.current_player = 'w'
         self.opponent_player = 'b'
-        self.castle = 0
+        self.is_castle = False
+        self.draw = False
     
         self.set_board(Rook.Rook('w',1,1,self))
         self.set_board(Knight.Knight('w',2,1,self))
@@ -52,21 +53,18 @@ class Board(object):
         return (piece.x_pos,piece.y_pos)
 
     def convert_to_coordinates(self,position):
-        if len(position) > 2:
+        if len(position) != 2:
             return False
         else:
-            try:
-                x = position.lower()[0]
-                y = int(position.lower()[1])
+            x = position.lower()[0]
+            y = int(position.lower()[1])
 
-                x_vals = ['','a','b','c','d','e','f','g','h']
+            x_vals = ['','a','b','c','d','e','f','g','h']
 
-                if x in x_vals:
-                    x = x_vals.index(x)
+            if x in x_vals:
+                x = x_vals.index(x)
 
-                return x,y
-            except:
-                return False
+            return x,y
 
     def convert_to_position(self,coordinates):
         x_vals = ['','A','B','C','D','E','F','G','H']
@@ -91,20 +89,17 @@ class Board(object):
     def display_board(self,player_name):
         x_header = ['','1','2','3','4','5','6','7','8','']
         y_header = ['','A','B','C','D','E','F','G','H','']
-        for y in range(10,-1,-1):
-            for x in range(11):
+        for y in range(9,-1,-1):
+            for x in range(10):
                 if (x,y) in self.filled_positions.keys():
                     print self.get_piece((x,y)).name+'\t',
                 else:
-                    try:
-                        if x == 0 or x == 9:
-                            print x_header[y]+'\t',
-                        elif y == 0 or y == 9:
-                            print y_header[x]+'\t',
-                        else:
-                            print '\t',
-                    except:
-                        pass
+                    if x == 0 or x == 9:
+                        print x_header[y]+'\t',
+                    elif y == 0 or y == 9:
+                        print y_header[x]+'\t',
+                    else:
+                        print '\t',
             print '\n'
 
         print player_name+' has to play'
@@ -132,6 +127,21 @@ class Board(object):
                 all_available_moves[self.opponent_player] = opponent_player_moves
 
         return all_available_moves
+
+    def check_for_check(self):
+        for position in self.get_all_moves()[self.opponent_player].values():
+            if self.king_positions[self.current_player] in position:
+                self.is_check[self.current_player] = True
+                break
+            else:
+                self.is_check[self.current_player] = False
+
+        for position in self.get_all_moves()[self.current_player].values():
+            if self.king_positions[self.opponent_player] in position:
+                self.is_check[self.opponent_player] = True
+                break
+            else:
+                self.is_check[self.opponent_player] = False
 
     def is_checkmate(self):
         if self.is_check[self.current_player]:
@@ -163,14 +173,34 @@ class Board(object):
         temp = self.current_player
         self.current_player = self.opponent_player
         self.opponent_player = temp
-                
-        self.filled_positions.pop((x_pos,y_pos))
-        self.filled_positions[(x_start,y_start)] = piece
-        
-        if piece_to_reverse is not piece:
-            self.filled_positions[(x_pos,y_pos)] = piece_to_reverse
-            self.cut_pieces.remove(piece_to_reverse)
-            self.points[self.current_player] -= piece_to_reverse.point
+
+        if self.is_castle:
+            if x_pos-x_start == 2:
+                self.filled_positions.pop((piece.x_pos,piece.y_pos))
+                piece.x_pos = piece.x_pos-2
+                self.filled_positions[(piece.x_pos,piece.y_pos)] = piece
+
+                rook_piece = self.get_piece((x_pos+1,y_pos))
+                self.filled_positions.pop((rook_piece.x_pos,rook_piece.y_pos))
+                rook_piece.x_pos = rook_piece.x_pos-3
+                self.filled_positions[(rook_piece.x_pos,rook_piece.y_pos)] = rook_piece
+            else:
+                self.filled_positions.pop((piece.x_pos,piece.y_pos))
+                piece.x_pos = piece.x_pos+2
+                self.filled_positions[(piece.x_pos,piece.y_pos)] = piece
+
+                rook_piece = self.get_piece((x_pos+3,y_pos))
+                self.filled_positions.pop((rook_piece.x_pos,rook_piece.y_pos))
+                rook_piece.x_pos = rook_piece.x_pos+2
+                self.filled_positions[(rook_piece.x_pos,rook_piece.y_pos)] = rook_piece
+        else:     
+            self.filled_positions[(x_start,y_start)] = piece
+            self.filled_positions.pop((x_pos,y_pos))
+            
+            if piece_to_reverse is not piece:
+                self.filled_positions[(x_pos,y_pos)] = piece_to_reverse
+                self.cut_pieces.remove(piece_to_reverse)
+                self.points[self.current_player] -= piece_to_reverse.point
 
         if '_K' in piece.name:
             self.king_positions[piece.color] = (x_start,y_start)
@@ -184,24 +214,49 @@ class Board(object):
         if (x_pos,y_pos) in piece.get_moves() and piece.color == self.current_player:
             (x_start,y_start) = self.get_position(piece)
             piece_to_reverse = piece
-        
-            old_piece = self.get_piece((x_pos,y_pos))
-           
-            if old_piece is None:
-                self.filled_positions[(x_pos,y_pos)] = piece
-                self.filled_positions.pop((x_start,y_start))
-            else:
-                if old_piece.color == piece.color:
-                    return False
+            
+            if '_K' in piece.name and abs(x_pos-piece.x_pos) == 2:
+                (x_start,y_start) = self.get_position(piece)
+                self.is_castle = True
+                
+                if x_pos-piece.x_pos == 2:
+                    rook_piece = self.get_piece((x_pos+1,y_pos))
+                    self.filled_positions.pop((rook_piece.x_pos,rook_piece.y_pos))
+                    rook_piece.x_pos = rook_piece.x_pos-2
+                    self.filled_positions[(rook_piece.x_pos,rook_piece.y_pos)] = rook_piece
+
+                    self.filled_positions.pop((piece.x_pos,piece.y_pos))
+                    piece.x_pos = piece.x_pos+2
+                    self.filled_positions[(piece.x_pos,piece.y_pos)] = piece
+
                 else:
-                    piece_to_reverse = old_piece
-                    self.cut_pieces.append(old_piece)
-                    self.points[self.current_player] += old_piece.point
+                    rook_piece = self.get_piece((x_pos-2,y_pos))
+                    self.filled_positions.pop((rook_piece.x_pos,rook_piece.y_pos))
+                    rook_piece.x_pos = rook_piece.x_pos+3
+                    self.filled_positions[(rook_piece.x_pos,rook_piece.y_pos)] = rook_piece
+
+                    self.filled_positions.pop((piece.x_pos,piece.y_pos))
+                    piece.x_pos = piece.x_pos-2
+                    self.filled_positions[(piece.x_pos,piece.y_pos)] = piece
+
+            else:
+                old_piece = self.get_piece((x_pos,y_pos))
+               
+                if old_piece is None:
                     self.filled_positions[(x_pos,y_pos)] = piece
                     self.filled_positions.pop((x_start,y_start))
- 
-            piece.x_pos = x_pos
-            piece.y_pos = y_pos
+                else:
+                    if old_piece.color == piece.color:
+                        return False
+                    else:
+                        piece_to_reverse = old_piece
+                        self.cut_pieces.append(old_piece)
+                        self.points[self.current_player] += old_piece.point
+                        self.filled_positions[(x_pos,y_pos)] = piece
+                        self.filled_positions.pop((x_start,y_start))
+     
+                piece.x_pos = x_pos
+                piece.y_pos = y_pos
 
             if '_K' in piece.name:
                 self.king_positions[piece.color] = (x_pos,y_pos)
@@ -210,24 +265,14 @@ class Board(object):
             self.current_player = self.opponent_player
             self.opponent_player = temp
      
-            for position in self.get_all_moves()[self.opponent_player].values():
-                if self.king_positions[self.current_player] in position:
-                    self.is_check[self.current_player] = True
-                    break
-                else:
-                    self.is_check[self.current_player] = False
-
-            for position in self.get_all_moves()[self.current_player].values():
-                if self.king_positions[self.opponent_player] in position:
-                    self.is_check[self.opponent_player] = True
-                    break
-                else:
-                    self.is_check[self.opponent_player] = False
+            self.check_for_check()
      
             if self.is_check[self.opponent_player]:
                 self.reverse_move(piece,x_start,y_start,x_pos,y_pos,piece_to_reverse)
             else:
                 piece.is_first_move = False
+
+            self.is_castle = False
 
         else:
             return False
@@ -254,18 +299,17 @@ class Board(object):
 
                 if player_before_move is not self.current_player:
                     points_gained = self.points[self.current_player] - starting_points
+                    self.reverse_move(piece,x_start,y_start,piece.x_pos,piece.y_pos,piece_to_reverse)
 
                     if points_gained >= max_points:
                         max_points = points_gained
                         best_piece = piece
                         best_position = position
 
-                    self.reverse_move(piece,x_start,y_start,piece.x_pos,piece.y_pos,piece_to_reverse)
-
-        try:
+        if len(best_position) > 0:
             self.make_move(best_piece,best_position[0],best_position[1])
             print 'Moved '+best_piece.name+' to '+self.convert_to_position([(best_position[0],best_position[1])])[0]
-        except:
+        else:
             print 'Stalemate'
             self.is_check[self.current_player] = True
                 

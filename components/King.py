@@ -32,5 +32,14 @@ class King(object):
                     if not (x_pos == x_start and y_pos == y_start):
                         if x_pos in range(1,9) and y_pos in range(1,9):
                             possible_positions.append((x_pos,y_pos))
+
+        if not self.board.is_castle:
+            if self.board.get_piece((self.x_pos-3,self.y_pos)) is None and self.board.get_piece((self.x_pos-2,self.y_pos)) is None and self.board.get_piece((self.x_pos-1,self.y_pos)) is None:
+                if self.is_first_move and self.board.get_piece((self.x_pos-4,self.y_pos)).is_first_move and not self.board.is_check[self.color]:
+                    possible_positions.append((self.x_pos-2,self.y_pos))
+
+            if self.board.get_piece((self.x_pos+1,self.y_pos)) is None and self.board.get_piece((self.x_pos+2,self.y_pos)) is None:
+                if self.is_first_move and self.board.get_piece((self.x_pos+3,self.y_pos)).is_first_move and not self.board.is_check[self.color]:
+                    possible_positions.append((self.x_pos+2,self.y_pos))
                         
         return possible_positions

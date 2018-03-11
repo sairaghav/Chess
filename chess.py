@@ -1,10 +1,10 @@
 from components import Board
 
 class Player(object):
-    def __init__(self,mode):
+    def __init__(self,mode,suggestions):
         self.board = Board.Board()
         self.end_of_game = 0
-        self.suggestions = True
+        self.suggestions = suggestions
         self.mode = int(mode)
 
         if self.mode == 1:
@@ -73,11 +73,15 @@ class Player(object):
 
     def start_single_player(self):
         try:
-            color_of_player = raw_input('Which side do you want to play? (Black/White): ')
-            if color_of_player.lower() == 'white':
-                white_player = raw_input('Enter the player name: ')
-            elif color_of_player.lower() == 'black':
-                black_player = raw_input('Enter the player name: ')
+            get_color = True
+            while get_color:
+                color_of_player = raw_input('Which side do you want to play? (Black/White): ')
+                if color_of_player.lower() == 'white':
+                    white_player = raw_input('Enter the player name: ')
+                    get_color = False
+                elif color_of_player.lower() == 'black':
+                    black_player = raw_input('Enter the player name: ')
+                    get_color = False
 
             while self.end_of_game == 0:
                 try:
@@ -121,9 +125,13 @@ if __name__ == '__main__':
     get_choice = True
     while get_choice:
         choice = int(raw_input('Hi!! Would you like to play in \n1. Single player mode\n2. Two player mode\nEnter your choice: '))
+        suggestions = raw_input('Would you like to get move suggestions? (yes/no): ')
 
         if choice in [1,2]:
-            Player(choice)
+            if suggestions.lower() in ['yes','y']:
+                Player(choice,True)
+            else:
+                Player(choice,False)
             rematch = raw_input('Would you like to play a new game? (yes/no): ')
             if not rematch.lower() in ['yes']:
                 get_choice = False
