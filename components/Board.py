@@ -10,12 +10,12 @@ class Board(object):
         self.current_player = 'w'
         self.opponent_player = 'b'
         self.is_castle = False
-        self.draw = False
+        self.is_draw = False
     
         self.set_board(Rook.Rook('w',1,1,self))
         self.set_board(Knight.Knight('w',2,1,self))
         self.set_board(Bishop.Bishop('w',3,1,self))
-        self.set_board(Queen.Queen('w',4,1,self))
+        self.white_queen = self.set_board(Queen.Queen('w',4,1,self))
         self.set_board(King.King('w',5,1,self))
         self.set_board(Bishop.Bishop('w',6,1,self))
         self.set_board(Knight.Knight('w',7,1,self))
@@ -32,7 +32,7 @@ class Board(object):
         self.set_board(Rook.Rook('b',1,8,self))
         self.set_board(Knight.Knight('b',2,8,self))
         self.set_board(Bishop.Bishop('b',3,8,self))
-        self.set_board(Queen.Queen('b',4,8,self))
+        self.black_queen = self.set_board(Queen.Queen('b',4,8,self))
         self.set_board(King.King('b',5,8,self))
         self.set_board(Bishop.Bishop('b',6,8,self))
         self.set_board(Knight.Knight('b',7,8,self))
@@ -272,6 +272,27 @@ class Board(object):
             else:
                 piece.is_first_move = False
 
+                if 'w_P' in piece.name and piece.y_pos == 8:
+                    if self.white_queen in self.cut_pieces:
+                        cut_pieces.remove(self.white_queen)
+                        self.filled_positions[(piece.x_pos,piece.y_pos)] = white_queen
+                        white_queen.x_pos = piece.x_pos
+                        white_queen.y_pos = piece.y_pos
+                        cut_pieces.append(piece)
+                    else:
+                        white_queen2 = self.set_board(Queen.Queen('w',piece.x_pos,piece.y_pos,self))
+
+                if 'b_P' in piece.name and piece.y_pos == 0:
+                    if self.black_queen in self.cut_pieces:
+                        cut_pieces.remove(self.black_queen)
+                        self.filled_positions[(piece.x_pos,piece.y_pos)] = black_queen
+                        black_queen.x_pos = piece.x_pos
+                        black_queen.y_pos = piece.y_pos
+                        cut_pieces.append(piece)
+                    else:
+                        white_queen2 = self.set_board(Queen.Queen('b',piece.x_pos,piece.y_pos,self))
+                    
+
             self.is_castle = False
 
         else:
@@ -308,10 +329,10 @@ class Board(object):
 
         if len(best_position) > 0:
             self.make_move(best_piece,best_position[0],best_position[1])
-            print 'Moved '+best_piece.name+' to '+self.convert_to_position([(best_position[0],best_position[1])])[0]
+            return best_piece
         else:
-            print 'Stalemate'
-            self.is_check[self.current_player] = True
+            self.is_draw = True
+            return False
                 
             
         

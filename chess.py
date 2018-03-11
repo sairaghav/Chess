@@ -55,18 +55,22 @@ class Player(object):
 
                 piece_to_move = self.board.get_piece((from_x_pos,from_y_pos))
                 if piece_to_move is not None and self.board.make_move(piece_to_move,to_x_pos,to_y_pos):
-                    if self.board.is_checkmate():
+                    if self.board.is_checkmate() or self.board.is_draw:
                         self.end_of_game = 1
                 else:
                     print 'Invalid Move'
 
-            if self.board.opponent_player == 'w':
-                print white_player+' wins!!!'
+            if self.board.is_draw:
+                print 'Game drawn due to stalemate'
+
             else:
-                print black_player+' wins!!!'
+                if self.board.opponent_player == 'w':
+                    print white_player+' wins!!!'
+                else:
+                    print black_player+' wins!!!'
 
         except KeyboardInterrupt:
-            if self.board.current_player == 'w':
+            if self.board.opponent_player == 'w':
                 print white_player+' wins!!!'
             else:
                 print black_player+' wins!!!'
@@ -105,18 +109,24 @@ class Player(object):
                     else:
                         print 'Invalid Move'
                 except:
-                    self.board.choose_best_move()
+                    moved_piece = self.board.choose_best_move()
+                    if moved_piece is not False:
+                        print 'Moved '+moved_piece.name+' to '+self.board.convert_to_position([(moved_piece.x_pos,moved_piece.y_pos)])[0]
 
-                if self.board.is_checkmate():
+                if self.board.is_checkmate() or self.board.is_draw:
                     self.end_of_game = 1
 
-            if self.board.opponent_player == 'w':
-                print white_player+' wins!!!'
+            if self.board.is_draw:
+                print 'Game drawn due to stalemate'
+
             else:
-                print black_player+' wins!!!'
+                if self.board.opponent_player == 'w':
+                    print white_player+' wins!!!'
+                else:
+                    print black_player+' wins!!!'
 
         except KeyboardInterrupt:
-            if self.board.current_player == 'w':
+            if self.board.opponent_player == 'w':
                 print white_player+' wins!!!'
             else:
                 print black_player+' wins!!!'
