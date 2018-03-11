@@ -262,8 +262,12 @@ class Board(object):
 
                     self.reverse_move(piece,x_start,y_start,piece.x_pos,piece.y_pos,piece_to_reverse)
 
-        self.make_move(best_piece,best_position[0],best_position[1])
-        print 'Moved '+best_piece.name+' to '+self.convert_to_position([(best_position[0],best_position[1])])[0]
+        try:
+            self.make_move(best_piece,best_position[0],best_position[1])
+            print 'Moved '+best_piece.name+' to '+self.convert_to_position([(best_position[0],best_position[1])])[0]
+        except:
+            print 'Stalemate'
+            self.is_check[self.current_player] = True
                 
             
         

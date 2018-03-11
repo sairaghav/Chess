@@ -31,7 +31,8 @@ class Pawn(object):
         try:
             self.board.get_piece((x_pos,y_pos)).color
         except:
-            possible_positions.append((x_pos,y_pos))
+            if y_pos in range(1,9):
+                possible_positions.append((x_pos,y_pos))
 
         for x_step in [-1,1]:
             x_pos = x_start+x_step
