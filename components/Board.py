@@ -133,23 +133,6 @@ class Board(object):
 
         return all_available_moves
 
-    def reverse_move(self,piece,x_start,y_start,x_pos,y_pos,piece_to_reverse):
-        try:
-            self.filled_positions.pop((x_pos,y_pos))
-            self.filled_positions[(x_start,y_start)] = piece
-            if piece_to_reverse is not piece:
-                self.filled_positions[(x_pos,y_pos)] = piece_to_reverse
-                self.cut_pieces.remove(piece_to_reverse)
-                self.points[self.current_player] = self.points[self.current_player] - piece_to_reverse.point
-            piece.x_pos = x_start
-            piece.y_pos = y_start
-            if '_K' in piece.name:
-                self.king_positions[piece.color] = (x_start,y_start)
-        except:
-            pass
-
-        return True
-
     def is_checkmate(self):
         if self.is_check[self.current_player]:
             for piece,positions in self.get_all_moves()[self.current_player].iteritems():
@@ -162,19 +145,40 @@ class Board(object):
                     if piece_to_reverse is None:
                         piece_to_reverse = piece
 
+                    player_before_move = self.current_player
+
                     self.make_move(piece,x_pos,y_pos)
-                    if not self.is_check[self.current_player]:
-                        self.reverse_move(piece,x_start,y_start,x_pos,y_pos,piece_to_reverse)
 
-                        temp = self.current_player
-                        self.current_player = self.opponent_player
-                        self.opponent_player = temp
+                    if player_before_move is not self.current_player:
+                        if not self.is_check[self.opponent_player]:
+                            self.reverse_move(piece,x_start,y_start,piece.x_pos,piece.y_pos,piece_to_reverse)
 
-                        return False
+                            return False
 
             return True
         else:
             return False
+
+    def reverse_move(self,piece,x_start,y_start,x_pos,y_pos,piece_to_reverse):
+        temp = self.current_player
+        self.current_player = self.opponent_player
+        self.opponent_player = temp
+                
+        self.filled_positions.pop((x_pos,y_pos))
+        self.filled_positions[(x_start,y_start)] = piece
+        
+        if piece_to_reverse is not piece:
+            self.filled_positions[(x_pos,y_pos)] = piece_to_reverse
+            self.cut_pieces.remove(piece_to_reverse)
+            self.points[self.current_player] -= piece_to_reverse.point
+
+        if '_K' in piece.name:
+            self.king_positions[piece.color] = (x_start,y_start)
+
+        piece.x_pos = x_start
+        piece.y_pos = y_start
+
+        return True
 
     def make_move(self,piece,x_pos,y_pos):
         if (x_pos,y_pos) in piece.get_moves() and piece.color == self.current_player:
@@ -192,15 +196,19 @@ class Board(object):
                 else:
                     piece_to_reverse = old_piece
                     self.cut_pieces.append(old_piece)
+                    self.points[self.current_player] += old_piece.point
                     self.filled_positions[(x_pos,y_pos)] = piece
                     self.filled_positions.pop((x_start,y_start))
-                    self.points[self.current_player] += old_piece.point
  
             piece.x_pos = x_pos
             piece.y_pos = y_pos
 
             if '_K' in piece.name:
                 self.king_positions[piece.color] = (x_pos,y_pos)
+
+            temp = self.current_player
+            self.current_player = self.opponent_player
+            self.opponent_player = temp
      
             for position in self.get_all_moves()[self.opponent_player].values():
                 if self.king_positions[self.current_player] in position:
@@ -216,16 +224,46 @@ class Board(object):
                 else:
                     self.is_check[self.opponent_player] = False
      
-            if self.is_check[self.current_player]:
+            if self.is_check[self.opponent_player]:
                 self.reverse_move(piece,x_start,y_start,x_pos,y_pos,piece_to_reverse)
             else:
                 piece.is_first_move = False
 
-                temp = self.current_player
-                self.current_player = self.opponent_player
-                self.opponent_player = temp
-
         else:
             return False
            
-        return True
+        return piece
+
+    def choose_best_move(self):
+        max_points = 0
+        starting_points = self.points[self.current_player]
+        best_piece = ''
+        best_position = ''
+        for piece,positions in self.get_all_moves()[self.current_player].iteritems():
+            for position in positions:
+                x_pos = position[0]
+                y_pos = position[1]
+
+                (x_start,y_start) = self.get_position(piece)
+                piece_to_reverse = self.get_piece((x_pos,y_pos))
+                if piece_to_reverse is None:
+                    piece_to_reverse = piece
+
+                player_before_move = self.current_player
+                self.make_move(piece,x_pos,y_pos)
+
+                if player_before_move is not self.current_player:
+                    points_gained = self.points[self.current_player] - starting_points
+
+                    if points_gained >= max_points:
+                        max_points = points_gained
+                        best_piece = piece
+                        best_position = position
+
+                    self.reverse_move(piece,x_start,y_start,piece.x_pos,piece.y_pos,piece_to_reverse)
+
+        self.make_move(best_piece,best_position[0],best_position[1])
+        print 'Moved '+best_piece.name+' to '+self.convert_to_position([(best_position[0],best_position[1])])[0]
+                
+            
+        
