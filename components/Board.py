@@ -332,7 +332,7 @@ class Board(object):
             return best_piece
         else:
             self.is_draw = True
-            return False
+            return None
                 
             
         

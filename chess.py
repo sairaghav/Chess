@@ -110,7 +110,7 @@ class Player(object):
                         print 'Invalid Move'
                 except:
                     moved_piece = self.board.choose_best_move()
-                    if moved_piece is not False:
+                    if moved_piece is not None:
                         print 'Moved '+moved_piece.name+' to '+self.board.convert_to_position([(moved_piece.x_pos,moved_piece.y_pos)])[0]
 
                 if self.board.is_checkmate() or self.board.is_draw:
