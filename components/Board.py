@@ -87,12 +87,18 @@ class Board(object):
         return self.filled_positions
 
     def display_board(self,player_name):
+        diff = 0
         x_header = ['','1','2','3','4','5','6','7','8','']
         y_header = ['','A','B','C','D','E','F','G','H','']
+
+        if self.current_player == 'b':
+            diff = 9
+            x_header = ['','8','7','6','5','4','3','2','1','']
+            y_header = ['','H','G','F','E','D','C','B','A','']
         for y in range(9,-1,-1):
             for x in range(10):
-                if (x,y) in self.filled_positions.keys():
-                    print self.get_piece((x,y)).name+'\t',
+                if (abs(x-diff),abs(y-diff)) in self.filled_positions.keys():
+                    print self.get_piece((abs(x-diff),abs(y-diff))).name+'\t',
                 else:
                     if x == 0 or x == 9:
                         print x_header[y]+'\t',
@@ -211,6 +217,7 @@ class Board(object):
         return True
 
     def make_move(self,piece,x_pos,y_pos):
+        cut_piece = None
         if (x_pos,y_pos) in piece.get_moves() and piece.color == self.current_player:
             (x_start,y_start) = self.get_position(piece)
             piece_to_reverse = piece
@@ -247,8 +254,9 @@ class Board(object):
                     self.filled_positions.pop((x_start,y_start))
                 else:
                     if old_piece.color == piece.color:
-                        return False
+                        return cut_piece,False
                     else:
+                        cut_piece = old_piece
                         piece_to_reverse = old_piece
                         self.cut_pieces.append(old_piece)
                         self.points[self.current_player] += old_piece.point
@@ -282,7 +290,7 @@ class Board(object):
                     else:
                         white_queen2 = self.set_board(Queen.Queen('w',piece.x_pos,piece.y_pos,self))
 
-                if 'b_P' in piece.name and piece.y_pos == 0:
+                if 'b_P' in piece.name and piece.y_pos == 1:
                     if self.black_queen in self.cut_pieces:
                         cut_pieces.remove(self.black_queen)
                         self.filled_positions[(piece.x_pos,piece.y_pos)] = black_queen
@@ -296,15 +304,17 @@ class Board(object):
             self.is_castle = False
 
         else:
-            return False
+            return cut_piece,False
            
-        return piece
+        return cut_piece,piece
 
     def choose_best_move(self):
         max_points = 0
         starting_points = self.points[self.current_player]
+        start_pos = ''
         best_piece = ''
         best_position = ''
+        cut_piece = None
         for piece,positions in self.get_all_moves()[self.current_player].iteritems():
             for position in positions:
                 x_pos = position[0]
@@ -319,20 +329,21 @@ class Board(object):
                 self.make_move(piece,x_pos,y_pos)
 
                 if player_before_move is not self.current_player:
-                    points_gained = self.points[self.current_player] - starting_points
+                    points_gained = self.points[player_before_move] - starting_points
                     self.reverse_move(piece,x_start,y_start,piece.x_pos,piece.y_pos,piece_to_reverse)
 
                     if points_gained >= max_points:
                         max_points = points_gained
                         best_piece = piece
                         best_position = position
+                        start_pos = (x_start,y_start)
 
         if len(best_position) > 0:
-            self.make_move(best_piece,best_position[0],best_position[1])
-            return best_piece
+            cut_piece,best_piece = self.make_move(best_piece,best_position[0],best_position[1])
+            return start_pos,cut_piece,best_piece
         else:
             self.is_draw = True
-            return None
+            return start_pos,cut_piece,False
                 
             
         

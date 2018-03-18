@@ -5,6 +5,7 @@ class Bishop(object):
         self.x_pos = x_pos
         self.y_pos = y_pos
         self.point = 5
+        self.is_first_move = True
         self.board = board
 
     def get_moves(self,x_start='',y_start=''):
