@@ -16,17 +16,17 @@ class Knight(object):
         if y_start == '':
             y_start = self.y_pos
         
-        for step1 in range(-2,3):
-            for step2 in range(-2,3):
-                if abs(step1) != abs(step2) and step1 != 0 and step2 != 0:
+        for step1 in [-2,-1,1,2]:
+            for step2 in [-2,-1,1,2]:
+                if abs(step1) != abs(step2):
                     x_pos = x_start+step1
                     y_pos = y_start+step2
                     try:
                         if self.board.get_piece((x_pos,y_pos)).color == self.color:
-                            break
+                            pass
                         else:
-                            possible_positions.append((x_pos,y_pos))
-                            break
+                            if x_pos in range(1,9) and y_pos in range(1,9):
+                                possible_positions.append((x_pos,y_pos))
                     except:
                         if x_pos in range(1,9) and y_pos in range(1,9):
                             possible_positions.append((x_pos,y_pos))
