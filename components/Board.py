@@ -1,4 +1,5 @@
-import Rook,Knight,Bishop,King,Queen,Pawn
+from . import Rook,Knight,Bishop,King,Queen,Pawn
+import pygame,os
 
 class Board(object):
     def __init__(self):
@@ -46,7 +47,7 @@ class Board(object):
         self.set_board(Pawn.Pawn('b',7,7,self))
         self.set_board(Pawn.Pawn('b',8,7,self))
 
-    def get_piece(self,(x_pos,y_pos)):
+    def get_piece(self,x_pos,y_pos):
         return self.filled_positions.get((x_pos,y_pos),None)
 
     def get_position(self,piece):
@@ -87,38 +88,33 @@ class Board(object):
         return self.filled_positions
 
     def display_board(self,player_name):
-        diff = 0
-        x_header = ['','1','2','3','4','5','6','7','8','']
-        y_header = ['','A','B','C','D','E','F','G','H','']
+        path = os.path.split(os.path.realpath(__file__))[0]
+        board_size = (750,725)
+        piece_size = (60,50)
 
-        if self.current_player == 'b':
-            diff = 9
-            x_header = ['','8','7','6','5','4','3','2','1','']
-            y_header = ['','H','G','F','E','D','C','B','A','']
-        for y in range(9,-1,-1):
-            for x in range(10):
-                if (abs(x-diff),abs(y-diff)) in self.filled_positions.keys():
-                    print self.get_piece((abs(x-diff),abs(y-diff))).name+'\t',
-                else:
-                    if x == 0 or x == 9:
-                        print x_header[y]+'\t',
-                    elif y == 0 or y == 9:
-                        print y_header[x]+'\t',
-                    else:
-                        print '\t',
-            print '\n'
+        screen = pygame.display.set_mode(board_size)
+        screen.blit(pygame.transform.scale(pygame.image.load(os.path.join(path,'pieces/board.png')),board_size),(0,0))
 
-        print player_name+' has to play'
-        print 'Pieces not available: ',
+        for piece in self.filled_positions.values():
+            x = piece.x_pos*75
+            y = abs(piece.y_pos-9)*75
+            screen.blit(pygame.transform.scale(pygame.image.load(os.path.join(path,piece.image)),piece_size),(x,y))
+
+        pygame.display.flip()
+        pygame.image.save(screen,os.path.join(path,'last_screen.png'))
+
+        print(player_name+' has to play')
+        print('Pieces not available: ',)
         if len(self.cut_pieces) == 0:
-            print 'Nil'
+            print('Nil')
         else:
             for cut_piece in self.cut_pieces:
                 if self.current_player in cut_piece.name:
-                    print cut_piece.name,
-            print ''
+                    print(cut_piece.name,)
+            print('')
 
-        print 'Points: '+str(self.points[self.current_player])
+        print('Points: '+str(self.points[self.current_player]))
+    
 
     def get_all_moves(self):
         all_available_moves = {}
@@ -151,13 +147,13 @@ class Board(object):
 
     def is_checkmate(self):
         if self.is_check[self.current_player]:
-            for piece,positions in self.get_all_moves()[self.current_player].iteritems():
+            for piece,positions in self.get_all_moves()[self.current_player].items():
                 for position in positions:
                     x_pos = position[0]
                     y_pos = position[1]
 
                     (x_start,y_start) = self.get_position(piece)
-                    piece_to_reverse = self.get_piece((x_pos,y_pos))
+                    piece_to_reverse = self.get_piece(x_pos,y_pos)
                     if piece_to_reverse is None:
                         piece_to_reverse = piece
 
@@ -186,7 +182,7 @@ class Board(object):
                 piece.x_pos = piece.x_pos-2
                 self.filled_positions[(piece.x_pos,piece.y_pos)] = piece
 
-                rook_piece = self.get_piece((x_pos+1,y_pos))
+                rook_piece = self.get_piece(x_pos+1,y_pos)
                 self.filled_positions.pop((rook_piece.x_pos,rook_piece.y_pos))
                 rook_piece.x_pos = rook_piece.x_pos-3
                 self.filled_positions[(rook_piece.x_pos,rook_piece.y_pos)] = rook_piece
@@ -195,7 +191,7 @@ class Board(object):
                 piece.x_pos = piece.x_pos+2
                 self.filled_positions[(piece.x_pos,piece.y_pos)] = piece
 
-                rook_piece = self.get_piece((x_pos+3,y_pos))
+                rook_piece = self.get_piece(x_pos+3,y_pos)
                 self.filled_positions.pop((rook_piece.x_pos,rook_piece.y_pos))
                 rook_piece.x_pos = rook_piece.x_pos+2
                 self.filled_positions[(rook_piece.x_pos,rook_piece.y_pos)] = rook_piece
@@ -227,7 +223,7 @@ class Board(object):
                 self.is_castle = True
                 
                 if x_pos-piece.x_pos == 2:
-                    rook_piece = self.get_piece((x_pos+1,y_pos))
+                    rook_piece = self.get_piece(x_pos+1,y_pos)
                     self.filled_positions.pop((rook_piece.x_pos,rook_piece.y_pos))
                     rook_piece.x_pos = rook_piece.x_pos-2
                     self.filled_positions[(rook_piece.x_pos,rook_piece.y_pos)] = rook_piece
@@ -237,7 +233,7 @@ class Board(object):
                     self.filled_positions[(piece.x_pos,piece.y_pos)] = piece
 
                 else:
-                    rook_piece = self.get_piece((x_pos-2,y_pos))
+                    rook_piece = self.get_piece(x_pos-2,y_pos)
                     self.filled_positions.pop((rook_piece.x_pos,rook_piece.y_pos))
                     rook_piece.x_pos = rook_piece.x_pos+3
                     self.filled_positions[(rook_piece.x_pos,rook_piece.y_pos)] = rook_piece
@@ -247,7 +243,7 @@ class Board(object):
                     self.filled_positions[(piece.x_pos,piece.y_pos)] = piece
 
             else:
-                old_piece = self.get_piece((x_pos,y_pos))
+                old_piece = self.get_piece(x_pos,y_pos)
                
                 if old_piece is None:
                     self.filled_positions[(x_pos,y_pos)] = piece
@@ -315,13 +311,13 @@ class Board(object):
         best_piece = ''
         best_position = ''
         cut_piece = None
-        for piece,positions in self.get_all_moves()[self.current_player].iteritems():
+        for piece,positions in self.get_all_moves()[self.current_player].items():
             for position in positions:
                 x_pos = position[0]
                 y_pos = position[1]
 
                 (x_start,y_start) = self.get_position(piece)
-                piece_to_reverse = self.get_piece((x_pos,y_pos))
+                piece_to_reverse = self.get_piece(x_pos,y_pos)
                 if piece_to_reverse is None:
                     piece_to_reverse = piece
 

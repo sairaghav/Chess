@@ -7,6 +7,10 @@ class Pawn(object):
         self.point = 1
         self.is_first_move = True
         self.board = board
+        if self.color == 'w':
+            self.image = 'pieces/white-pawn.png'
+        elif self.color == 'b':
+            self.image = 'pieces/black-pawn.png'
         
 
     def get_moves(self,x_start='',y_start=''):
@@ -21,15 +25,15 @@ class Pawn(object):
         y_pos = y_start
         if self.color.lower() == 'b':
             y_pos = y_start-1
-            if self.is_first_move and self.board.get_piece((x_pos,y_start-2)) is None and self.y_pos-2 in range(1,9):
+            if self.is_first_move and self.board.get_piece(x_pos,y_start-2) is None and self.y_pos-2 in range(1,9):
                 possible_positions.append((x_pos,self.y_pos-2))
         else:
             y_pos = y_start+1
-            if self.is_first_move and self.board.get_piece((x_pos,y_start+2)) is None and self.y_pos+2 in range(1,9):
+            if self.is_first_move and self.board.get_piece(x_pos,y_start+2) is None and self.y_pos+2 in range(1,9):
                 possible_positions.append((x_pos,self.y_pos+2))
 
         try:
-            self.board.get_piece((x_pos,y_pos)).color
+            self.board.get_piece(x_pos,y_pos).color
         except:
             if y_pos in range(1,9):
                 possible_positions.append((x_pos,y_pos))
@@ -37,7 +41,7 @@ class Pawn(object):
         for x_step in [-1,1]:
             x_pos = x_start+x_step
             try:
-                if self.color != self.board.get_piece((x_pos,y_pos)).color and y_pos in range(1,9):
+                if self.color != self.board.get_piece(x_pos,y_pos).color and y_pos in range(1,9):
                     possible_positions.append((x_pos,y_pos))
             except:
                 pass

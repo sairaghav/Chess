@@ -8,6 +8,11 @@ class Rook(object):
         self.is_first_move = True
         self.board = board
 
+        if self.color == 'w':
+            self.image = 'pieces/white-rook.png'
+        elif self.color == 'b':
+            self.image = 'pieces/black-rook.png'
+
     def get_moves(self,x_start='',y_start=''):
         possible_positions = []
 
@@ -22,7 +27,7 @@ class Rook(object):
             x_pos = x_start+x_step
 
             try:
-                if self.board.get_piece((x_pos,y_pos)).color == self.color:
+                if self.board.get_piece(x_pos,y_pos).color == self.color:
                     break
                 else:
                     possible_positions.append((x_pos,y_pos))
@@ -37,7 +42,7 @@ class Rook(object):
             x_pos = x_start+x_step
 
             try:
-                if self.board.get_piece((x_pos,y_pos)).color == self.color:
+                if self.board.get_piece(x_pos,y_pos).color == self.color:
                     break
                 else:
                     possible_positions.append((x_pos,y_pos))
@@ -52,7 +57,7 @@ class Rook(object):
             y_pos = y_start+y_step
 
             try:
-                if self.board.get_piece((x_pos,y_pos)).color == self.color:
+                if self.board.get_piece(x_pos,y_pos).color == self.color:
                     break
                 else:
                     possible_positions.append((x_pos,y_pos))
@@ -67,7 +72,7 @@ class Rook(object):
             y_pos = y_start+y_step
 
             try:
-                if self.board.get_piece((x_pos,y_pos)).color == self.color:
+                if self.board.get_piece(x_pos,y_pos).color == self.color:
                     break
                 else:
                     possible_positions.append((x_pos,y_pos))

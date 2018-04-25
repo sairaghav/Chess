@@ -5,6 +5,10 @@ class Queen(object):
         self.x_pos = x_pos
         self.y_pos = y_pos
         self.point = 10
+        if self.color == 'w':
+            self.image = 'pieces/white-queen.png'
+        elif self.color == 'b':
+            self.image = 'pieces/black-queen.png'
         self.is_first_move = True
         self.board = board
     
@@ -22,7 +26,7 @@ class Queen(object):
             x_pos = x_start+x_step
 
             try:
-                if self.board.get_piece((x_pos,y_pos)).color == self.color:
+                if self.board.get_piece(x_pos,y_pos).color == self.color:
                     break
                 else:
                     possible_positions.append((x_pos,y_pos))
@@ -37,7 +41,7 @@ class Queen(object):
             x_pos = x_start+x_step
 
             try:
-                if self.board.get_piece((x_pos,y_pos)).color == self.color:
+                if self.board.get_piece(x_pos,y_pos).color == self.color:
                     break
                 else:
                     possible_positions.append((x_pos,y_pos))
@@ -52,7 +56,7 @@ class Queen(object):
             y_pos = y_start+y_step
 
             try:
-                if self.board.get_piece((x_pos,y_pos)).color == self.color:
+                if self.board.get_piece(x_pos,y_pos).color == self.color:
                     break
                 else:
                     possible_positions.append((x_pos,y_pos))
@@ -67,7 +71,7 @@ class Queen(object):
             y_pos = y_start+y_step
 
             try:
-                if self.board.get_piece((x_pos,y_pos)).color == self.color:
+                if self.board.get_piece(x_pos,y_pos).color == self.color:
                     break
                 else:
                     possible_positions.append((x_pos,y_pos))
@@ -83,7 +87,7 @@ class Queen(object):
             y_pos = y_start+step
 
             try:
-                if self.board.get_piece((x_pos,y_pos)).color == self.color:
+                if self.board.get_piece(x_pos,y_pos).color == self.color:
                     break
                 else:
                     possible_positions.append((x_pos,y_pos))
@@ -99,7 +103,7 @@ class Queen(object):
             y_pos = y_start+step
 
             try:
-                if self.board.get_piece((x_pos,y_pos)).color == self.color:
+                if self.board.get_piece(x_pos,y_pos).color == self.color:
                     break
                 else:
                     possible_positions.append((x_pos,y_pos))
@@ -115,7 +119,7 @@ class Queen(object):
             y_pos = y_start+step
 
             try:
-                if self.board.get_piece((x_pos,y_pos)).color == self.color:
+                if self.board.get_piece(x_pos,y_pos).color == self.color:
                     break
                 else:
                     possible_positions.append((x_pos,y_pos))
@@ -131,7 +135,7 @@ class Queen(object):
             y_pos = y_start+step
 
             try:
-                if self.board.get_piece((x_pos,y_pos)).color == self.color:
+                if self.board.get_piece(x_pos,y_pos).color == self.color:
                     break
                 else:
                     possible_positions.append((x_pos,y_pos))

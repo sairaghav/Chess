@@ -5,6 +5,10 @@ class Knight(object):
         self.x_pos = x_pos
         self.y_pos = y_pos
         self.point = 5
+        if self.color == 'w':
+            self.image = 'pieces/white-knight.png'
+        elif self.color == 'b':
+            self.image = 'pieces/black-knight.png'
         self.is_first_move = True
         self.board = board
 
@@ -22,7 +26,7 @@ class Knight(object):
                     x_pos = x_start+step1
                     y_pos = y_start+step2
                     try:
-                        if self.board.get_piece((x_pos,y_pos)).color == self.color:
+                        if self.board.get_piece(x_pos,y_pos).color == self.color:
                             pass
                         else:
                             if x_pos in range(1,9) and y_pos in range(1,9):
