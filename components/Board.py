@@ -110,7 +110,7 @@ class Board(object):
         else:
             for cut_piece in self.cut_pieces:
                 if self.current_player in cut_piece.name:
-                    print(cut_piece.name,)
+                    print(cut_piece.name,sep=' ')
             print('')
 
         print('Points: '+str(self.points[self.current_player]))
