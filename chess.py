@@ -45,7 +45,7 @@ class Player(object):
             self.end_of_game = 1
             return 0,0,0,0
         except AttributeError:
-            self.end_of_game = 1
+            self.is_draw = True
             return 0,0,0,0
         
     def start_two_player(self):
