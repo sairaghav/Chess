@@ -57,7 +57,7 @@ def cast_image(image_location,cc_name=''):
         return False
     else:
         global server_port
-        server_host = '192.168.1.14'
+        server_host = socket.gethostbyname(socket.gethostname())
         server_port = 55555
         server_root_dir = os.path.split(image_location)[0]
        
