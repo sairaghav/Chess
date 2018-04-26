@@ -1,51 +1,51 @@
-from . import Rook,Knight,Bishop,King,Queen,Pawn, cast_to_tv
-import pygame,os,time
+from . import Rook,Knight,Bishop,King,Queen,Pawn
 
 class Board(object):
     def __init__(self):
         self.cut_pieces = []
         self.filled_positions = {}
-        self.king_positions = {'w':'','b':''}
-        self.points = {'w':0,'b':0}
-        self.is_check = {'w':False,'b':False}
-        self.current_player = 'w'
-        self.opponent_player = 'b'
+        self.king_positions = {'white':'','black':''}
+        self.points = {'white':0,'black':0}
+        self.is_check = {'white':False,'black':False}
+        self.current_player = 'white'
+        self.opponent_player = 'black'
         self.is_castle = False
         self.is_draw = False
+        self.image = 'images/board.png'
     
-        self.set_board(Rook.Rook('w',1,1,self))
-        self.set_board(Knight.Knight('w',2,1,self))
-        self.set_board(Bishop.Bishop('w',3,1,self))
-        self.white_queen = self.set_board(Queen.Queen('w',4,1,self))
-        self.set_board(King.King('w',5,1,self))
-        self.set_board(Bishop.Bishop('w',6,1,self))
-        self.set_board(Knight.Knight('w',7,1,self))
-        self.set_board(Rook.Rook('w',8,1,self))
-        self.set_board(Pawn.Pawn('w',1,2,self))
-        self.set_board(Pawn.Pawn('w',2,2,self))
-        self.set_board(Pawn.Pawn('w',3,2,self))
-        self.set_board(Pawn.Pawn('w',4,2,self))
-        self.set_board(Pawn.Pawn('w',5,2,self))
-        self.set_board(Pawn.Pawn('w',6,2,self))
-        self.set_board(Pawn.Pawn('w',7,2,self))
-        self.set_board(Pawn.Pawn('w',8,2,self))
+        self.set_board(Rook.Rook('white',1,1,self))
+        self.set_board(Knight.Knight('white',2,1,self))
+        self.set_board(Bishop.Bishop('white',3,1,self))
+        self.white_queen = self.set_board(Queen.Queen('white',4,1,self))
+        self.set_board(King.King('white',5,1,self))
+        self.set_board(Bishop.Bishop('white',6,1,self))
+        self.set_board(Knight.Knight('white',7,1,self))
+        self.set_board(Rook.Rook('white',8,1,self))
+        self.set_board(Pawn.Pawn('white',1,2,self))
+        self.set_board(Pawn.Pawn('white',2,2,self))
+        self.set_board(Pawn.Pawn('white',3,2,self))
+        self.set_board(Pawn.Pawn('white',4,2,self))
+        self.set_board(Pawn.Pawn('white',5,2,self))
+        self.set_board(Pawn.Pawn('white',6,2,self))
+        self.set_board(Pawn.Pawn('white',7,2,self))
+        self.set_board(Pawn.Pawn('white',8,2,self))
 
-        self.set_board(Rook.Rook('b',1,8,self))
-        self.set_board(Knight.Knight('b',2,8,self))
-        self.set_board(Bishop.Bishop('b',3,8,self))
-        self.black_queen = self.set_board(Queen.Queen('b',4,8,self))
-        self.set_board(King.King('b',5,8,self))
-        self.set_board(Bishop.Bishop('b',6,8,self))
-        self.set_board(Knight.Knight('b',7,8,self))
-        self.set_board(Rook.Rook('b',8,8,self))
-        self.set_board(Pawn.Pawn('b',1,7,self))
-        self.set_board(Pawn.Pawn('b',2,7,self))
-        self.set_board(Pawn.Pawn('b',3,7,self))
-        self.set_board(Pawn.Pawn('b',4,7,self))
-        self.set_board(Pawn.Pawn('b',5,7,self))
-        self.set_board(Pawn.Pawn('b',6,7,self))
-        self.set_board(Pawn.Pawn('b',7,7,self))
-        self.set_board(Pawn.Pawn('b',8,7,self))
+        self.set_board(Rook.Rook('black',1,8,self))
+        self.set_board(Knight.Knight('black',2,8,self))
+        self.set_board(Bishop.Bishop('black',3,8,self))
+        self.black_queen = self.set_board(Queen.Queen('black',4,8,self))
+        self.set_board(King.King('black',5,8,self))
+        self.set_board(Bishop.Bishop('black',6,8,self))
+        self.set_board(Knight.Knight('black',7,8,self))
+        self.set_board(Rook.Rook('black',8,8,self))
+        self.set_board(Pawn.Pawn('black',1,7,self))
+        self.set_board(Pawn.Pawn('black',2,7,self))
+        self.set_board(Pawn.Pawn('black',3,7,self))
+        self.set_board(Pawn.Pawn('black',4,7,self))
+        self.set_board(Pawn.Pawn('black',5,7,self))
+        self.set_board(Pawn.Pawn('black',6,7,self))
+        self.set_board(Pawn.Pawn('black',7,7,self))
+        self.set_board(Pawn.Pawn('black',8,7,self))
 
     def get_piece(self,x_pos,y_pos):
         return self.filled_positions.get((x_pos,y_pos),None)
@@ -82,42 +82,10 @@ class Board(object):
         x_pos = piece.x_pos
         y_pos = piece.y_pos
         self.filled_positions[(x_pos,y_pos)] = piece
-        if '_K' in piece.name:
+        if 'King' in piece.name:
             self.king_positions[piece.color] = (x_pos,y_pos)
             
         return self.filled_positions
-
-    def display_board(self,player_name):
-        path = os.path.split(os.path.realpath(__file__))[0]
-        board_size = (750,725)
-        piece_size = (60,50)
-
-        screen = pygame.display.set_mode(board_size)
-        screen.blit(pygame.transform.scale(pygame.image.load(os.path.join(path,'pieces/board.png')),board_size),(0,0))
-
-        for piece in self.filled_positions.values():
-            x = piece.x_pos*75
-            y = abs(piece.y_pos-9)*75
-            screen.blit(pygame.transform.scale(pygame.image.load(os.path.join(path,piece.image)),piece_size),(x,y))
-
-        #pygame.display.flip()
-        image_path = os.path.join(path,'moves/last_screen'+str(time.time())+'.png')
-        pygame.image.save(screen,image_path)
-        cast_to_tv.cast_image(image_path)
-        
-
-        print(player_name+' has to play')
-        print('Pieces not available: ',)
-        if len(self.cut_pieces) == 0:
-            print('Nil')
-        else:
-            for cut_piece in self.cut_pieces:
-                if self.current_player in cut_piece.name:
-                    print(cut_piece.name,sep=' ')
-            print('')
-
-        print('Points: '+str(self.points[self.current_player]))
-    
 
     def get_all_moves(self):
         all_available_moves = {}
@@ -207,7 +175,7 @@ class Board(object):
                 self.cut_pieces.remove(piece_to_reverse)
                 self.points[self.current_player] -= piece_to_reverse.point
 
-        if '_K' in piece.name:
+        if 'King' in piece.name:
             self.king_positions[piece.color] = (x_start,y_start)
 
         piece.x_pos = x_start
@@ -221,7 +189,7 @@ class Board(object):
             (x_start,y_start) = self.get_position(piece)
             piece_to_reverse = piece
             
-            if '_K' in piece.name and abs(x_pos-piece.x_pos) == 2:
+            if 'King' in piece.name and abs(x_pos-piece.x_pos) == 2:
                 (x_start,y_start) = self.get_position(piece)
                 self.is_castle = True
                 
@@ -265,7 +233,7 @@ class Board(object):
                 piece.x_pos = x_pos
                 piece.y_pos = y_pos
 
-            if '_K' in piece.name:
+            if 'King' in piece.name:
                 self.king_positions[piece.color] = (x_pos,y_pos)
 
             temp = self.current_player
@@ -279,7 +247,7 @@ class Board(object):
             else:
                 piece.is_first_move = False
 
-                if 'w_P' in piece.name and piece.y_pos == 8:
+                if 'white Pawn' in piece.name and piece.y_pos == 8:
                     if self.white_queen in self.cut_pieces:
                         cut_pieces.remove(self.white_queen)
                         self.filled_positions[(piece.x_pos,piece.y_pos)] = white_queen
@@ -287,9 +255,9 @@ class Board(object):
                         white_queen.y_pos = piece.y_pos
                         cut_pieces.append(piece)
                     else:
-                        white_queen2 = self.set_board(Queen.Queen('w',piece.x_pos,piece.y_pos,self))
+                        white_queen2 = self.set_board(Queen.Queen('white',piece.x_pos,piece.y_pos,self))
 
-                if 'b_P' in piece.name and piece.y_pos == 1:
+                if 'black Pawn' in piece.name and piece.y_pos == 1:
                     if self.black_queen in self.cut_pieces:
                         cut_pieces.remove(self.black_queen)
                         self.filled_positions[(piece.x_pos,piece.y_pos)] = black_queen
@@ -297,7 +265,7 @@ class Board(object):
                         black_queen.y_pos = piece.y_pos
                         cut_pieces.append(piece)
                     else:
-                        white_queen2 = self.set_board(Queen.Queen('b',piece.x_pos,piece.y_pos,self))
+                        white_queen2 = self.set_board(Queen.Queen('black',piece.x_pos,piece.y_pos,self))
                     
 
             self.is_castle = False

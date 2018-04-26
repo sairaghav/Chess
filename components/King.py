@@ -1,14 +1,14 @@
 class King(object):
     def __init__(self,color,x_pos,y_pos,board):
         self.color = color.lower()
-        self.name = self.color+'_K'
+        self.name = self.color+' King'
         self.x_pos = x_pos
         self.y_pos = y_pos
         self.point = 10
-        if self.color == 'w':
-            self.image = 'pieces/white-king.png'
-        elif self.color == 'b':
-            self.image = 'pieces/black-king.png'
+        if 'w' in self.color:
+            self.image = 'images/white-king.png'
+        elif 'b' in self.color:
+            self.image = 'images/black-king.png'
         self.is_first_move = True
         self.board = board             
 

@@ -1,17 +1,17 @@
 class Rook(object):
     def __init__(self,color,x_pos,y_pos,board):
         self.color = color.lower()
-        self.name = self.color+'_R'
+        self.name = self.color+' Rook'
         self.x_pos = x_pos
         self.y_pos = y_pos
         self.point = 5
         self.is_first_move = True
         self.board = board
 
-        if self.color == 'w':
-            self.image = 'pieces/white-rook.png'
-        elif self.color == 'b':
-            self.image = 'pieces/black-rook.png'
+        if 'w' in self.color:
+            self.image = 'images/white-rook.png'
+        elif 'b' in self.color:
+            self.image = 'images/black-rook.png'
 
     def get_moves(self,x_start='',y_start=''):
         possible_positions = []

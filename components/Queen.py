@@ -1,14 +1,14 @@
 class Queen(object):
     def __init__(self,color,x_pos,y_pos,board):
         self.color = color.lower()
-        self.name = self.color+'_Q'
+        self.name = self.color+' Queen'
         self.x_pos = x_pos
         self.y_pos = y_pos
         self.point = 10
-        if self.color == 'w':
-            self.image = 'pieces/white-queen.png'
-        elif self.color == 'b':
-            self.image = 'pieces/black-queen.png'
+        if 'w' in self.color:
+            self.image = 'images/white-queen.png'
+        elif 'b' in self.color:
+            self.image = 'images/black-queen.png'
         self.is_first_move = True
         self.board = board
     

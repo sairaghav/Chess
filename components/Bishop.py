@@ -1,14 +1,14 @@
 class Bishop(object):
     def __init__(self,color,x_pos,y_pos,board):
         self.color = color.lower()
-        self.name = self.color+'_B'
+        self.name = self.color+' Bishop'
         self.x_pos = x_pos
         self.y_pos = y_pos
         self.point = 5
-        if self.color == 'w':
-            self.image = 'pieces/white-bishop.png'
-        elif self.color == 'b':
-            self.image = 'pieces/black-bishop.png'
+        if 'w' in self.color:
+            self.image = 'images/white-bishop.png'
+        elif 'b' in self.color:
+            self.image = 'images/black-bishop.png'
         self.is_first_move = True
         self.board = board
 

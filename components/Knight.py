@@ -1,14 +1,14 @@
 class Knight(object):
     def __init__(self,color,x_pos,y_pos,board):
         self.color = color.lower()
-        self.name = self.color+'_H'
+        self.name = self.color+' Knight'
         self.x_pos = x_pos
         self.y_pos = y_pos
         self.point = 5
-        if self.color == 'w':
-            self.image = 'pieces/white-knight.png'
-        elif self.color == 'b':
-            self.image = 'pieces/black-knight.png'
+        if 'w' in self.color:
+            self.image = 'images/white-knight.png'
+        elif 'b' in self.color:
+            self.image = 'images/black-knight.png'
         self.is_first_move = True
         self.board = board
 

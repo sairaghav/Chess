@@ -1,9 +1,17 @@
 import os,time,threading
 import socket,http.server,socketserver
-import pychromecast    
+import pychromecast
+
+def create_dir(dir_name):
+    try:
+        if not os.path.exists(dir_name):
+            os.makedirs(dir_name)
+    except:
+        pass
 
 def host_server(hosting_port,server_root_dir):
     global server_port
+    create_dir(server_root_dir)
 
     try:
         server_port = int(hosting_port)
