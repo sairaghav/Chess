@@ -23,7 +23,7 @@ class Player(object):
             get_input = True
             while get_input:
                 if cnt < 3:
-                    speaker.speak('Enter the from position: ')
+                    speaker.speak('Which position would you like to move?')
                     user_input = listener.listen()
                 else:
                     user_input = input('Enter the from position: ')
@@ -58,7 +58,7 @@ class Player(object):
             get_input = True
             while get_input:
                 if cnt < 3:
-                    speaker.speak('Enter the to position: ')
+                    speaker.speak('Where would you like to move to?')
                     user_input = listener.listen()
                 else:
                     user_input = input('Enter the to position: ')
@@ -84,13 +84,7 @@ class Player(object):
         speaker.speak(player_name+' has to play '+self.board.current_player+' pieces')
         points = self.board.points[self.board.current_player]
         if points > 0:
-            speaker.speak('You have scored '+str(points)+' points')
-
-        if not len(self.board.cut_pieces) == 0:
-            speaker.speak('You do not have ')
-            for cut_piece in self.board.cut_pieces:
-                if self.board.current_player in cut_piece.name:
-                    speaker.speak(cut_piece.name)
+            speaker.speak(player_name+' has scored '+str(points)+' points')
 
     def display_board(self):
         path = os.path.split(os.path.realpath(__file__))[0]
