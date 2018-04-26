@@ -1,5 +1,5 @@
-from . import Rook,Knight,Bishop,King,Queen,Pawn
-import pygame,os
+from . import Rook,Knight,Bishop,King,Queen,Pawn, cast_to_tv
+import pygame,os,time
 
 class Board(object):
     def __init__(self):
@@ -100,8 +100,11 @@ class Board(object):
             y = abs(piece.y_pos-9)*75
             screen.blit(pygame.transform.scale(pygame.image.load(os.path.join(path,piece.image)),piece_size),(x,y))
 
-        pygame.display.flip()
-        pygame.image.save(screen,os.path.join(path,'last_screen.png'))
+        #pygame.display.flip()
+        image_path = os.path.join(path,'moves/last_screen'+str(time.time())+'.png')
+        pygame.image.save(screen,image_path)
+        cast_to_tv.cast_image(image_path)
+        
 
         print(player_name+' has to play')
         print('Pieces not available: ',)
