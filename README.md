@@ -1,6 +1,6 @@
 # Chess
 
-### Speech based chess with ability to cast to TV through Chromecast
+### Speech based chess with ability to cast to TV with Chromecast
 *Required modules (Python 3): pyaudio, pyttsx3, SpeechRecognition, pygame*
 
 - Speech-based input (Say 'A4' or 'B6' to denote the position of the piece)
