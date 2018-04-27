@@ -1,6 +1,6 @@
-from components import Board
-from components import speaker,listener,cast_to_tv
-import os,time
+from lib import Board
+from lib import speaker,listener,caster
+import os,time,shutil
 import pygame
 
 class Player(object):
@@ -10,6 +10,9 @@ class Player(object):
         self.suggestions = suggestions
         self.mode = int(mode)
         self.cast = cast
+
+        if self.cast:
+            self.cc = caster.get_cc()
 
         if self.mode == 1:
             self.start_single_player()
@@ -72,7 +75,7 @@ class Player(object):
                 else:
                     cnt += 1
                 if cnt == 3 and get_input:
-                    speaker.speak('I am unable to understand you. Please type the from position')
+                    speaker.speak('I am unable to understand you. Please type the to position')
                         
             return from_x_pos,from_y_pos,to_x_pos,to_y_pos
 
@@ -100,10 +103,13 @@ class Player(object):
             screen.blit(pygame.transform.scale(pygame.image.load(os.path.join(path,piece.image)),piece_size),(x,y))
 
         if self.cast:
-            image_path = os.path.join(path,'snapshots/display_'+str(time.time())+'.png')
-            print(image_path)
-            pygame.image.save(screen,image_path)
-            cast_to_tv.cast_image(image_path)
+            if self.cc is not None:
+                image_path = os.path.join(path,'snapshots/display_'+str(time.time())+'.png')
+                caster.create_dir(os.path.split(image_path)[0])
+                pygame.image.save(screen,image_path)
+                caster.cast_image(image_path,self.cc)
+            else:
+                pygame.display.flip()
         else:
             pygame.display.flip()
     
@@ -159,8 +165,8 @@ class Player(object):
             else:
                 speaker.speak('What did you say?')
 
+        self.display_board()
         while self.end_of_game == 0:
-            self.display_board()
             self.get_info(player_name[self.board.current_player])
             if color_of_player == self.board.current_player:
                 from_x_pos,from_y_pos,to_x_pos,to_y_pos = self.get_user_input(color_of_player)
@@ -171,6 +177,7 @@ class Player(object):
                     if moved_piece:
                         if cut_piece != None:
                             speaker.speak(cut_piece.name+' is cut by '+piece_to_move.name)
+                        self.display_board()
 
             else:
                 if self.end_of_game == 0:
@@ -179,6 +186,7 @@ class Player(object):
                         speaker.speak('Moved '+moved_piece.name+' from '+self.board.convert_to_position([(start_pos[0],start_pos[1])])[0]+' to '+self.board.convert_to_position([(moved_piece.x_pos,moved_piece.y_pos)])[0])
                         if cut_piece != None:
                             speaker.speak(cut_piece.name+' is cut by '+moved_piece.name)
+                        self.display_board()
 
             if self.board.is_checkmate() or self.board.is_draw:
                 self.end_of_game = 1
@@ -211,6 +219,7 @@ if __name__ == '__main__':
                 
                 speaker.speak('Would you like to get move suggestions? (yes or no): ')
                 suggestions = listener.listen()
+                speaker.speak('I am preparing the game.. Please wait for some time..')
                 if 'yes' in suggestions.lower():
                     Player(user_choice,True,cast)
                 elif 'no' in suggestions.lower():
@@ -219,6 +228,7 @@ if __name__ == '__main__':
                     speaker.speak('I did not understand what you said. I will enable suggestions by default.')
                     Player(user_choice,True,cast)
                     
+                shutil.rmtree(os.path.join(os.path.split(os.path.realpath(__file__))[0],'snapshots'))
                 speaker.speak('Would you like to play a new game? (yes or no): ')
                 rematch = listener.listen()
                 if 'no' in rematch.lower():

@@ -7,10 +7,9 @@ def create_dir(dir_name):
         if not os.path.exists(dir_name):
             os.makedirs(dir_name)
     except:
-        pass
+        return False
 
 def host_server(hosting_port,server_root_dir):
-    global server_port
     create_dir(server_root_dir)
 
     try:
@@ -39,10 +38,7 @@ def get_cc(cc_name=''):
 
     return None
 
-def send_to_chromecast(cast_url,cc_name=''):
-    global mc
-    cast = get_cc(cc_name)
-
+def send_to_chromecast(cast_url,cast):
     if cast is not None:
         mc = cast.media_controller
         mc.play_media(cast_url,'image/png')
@@ -52,17 +48,13 @@ def send_to_chromecast(cast_url,cc_name=''):
         return False
         
 
-def cast_image(image_location,cc_name=''):
-    if get_cc(cc_name) is None:
-        return False
-    else:
-        global server_port
-        server_host = socket.gethostbyname(socket.gethostname())
-        server_port = 55555
-        server_root_dir = os.path.split(image_location)[0]
-       
-        threading.Thread(target=host_server,args=(server_port,server_root_dir,)).start()
+def cast_image(image_location,cc):
+    server_host = socket.gethostbyname(socket.gethostname())
+    server_port = 55555
+    server_root_dir = os.path.split(image_location)[0]
+   
+    threading.Thread(target=host_server,args=(server_port,server_root_dir,)).start()
 
-        cast_url = 'http://'+server_host+':'+str(server_port)+'/'+os.path.split(image_location)[1]
-        send_to_chromecast(cast_url,cc_name)
-        return True
+    cast_url = 'http://'+server_host+':'+str(server_port)+'/'+os.path.split(image_location)[1]
+    send_to_chromecast(cast_url,cc)
+    return True
