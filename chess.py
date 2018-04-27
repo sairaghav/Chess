@@ -10,6 +10,7 @@ class Player(object):
         self.suggestions = suggestions
         self.mode = int(mode)
         self.cast = cast
+        self.path = os.path.split(os.path.realpath(__file__))[0]
 
         if self.cast:
             self.cc = caster.get_cc()
@@ -50,7 +51,7 @@ class Player(object):
 
             if self.suggestions:
                 if len(suggestions) > 0:
-                    speaker.speak('Suggested moves: ')
+                    speaker.speak('Possible moves: ')
                     for pos in self.board.convert_to_position(suggestions):
                         speaker.speak(pos)
                 else:
@@ -90,21 +91,20 @@ class Player(object):
             speaker.speak(player_name+' has scored '+str(points)+' points')
 
     def display_board(self):
-        path = os.path.split(os.path.realpath(__file__))[0]
         board_size = (750,725)
         piece_size = (60,50)
 
         screen = pygame.display.set_mode(board_size)
-        screen.blit(pygame.transform.scale(pygame.image.load(os.path.join(path,self.board.image)),board_size),(0,0))
+        screen.blit(pygame.transform.scale(pygame.image.load(os.path.join(self.path,self.board.image)),board_size),(0,0))
 
         for piece in self.board.filled_positions.values():
             x = piece.x_pos*75
             y = abs(piece.y_pos-9)*75
-            screen.blit(pygame.transform.scale(pygame.image.load(os.path.join(path,piece.image)),piece_size),(x,y))
+            screen.blit(pygame.transform.scale(pygame.image.load(os.path.join(self.path,piece.image)),piece_size),(x,y))
 
         if self.cast:
             if self.cc is not None:
-                image_path = os.path.join(path,'snapshots/display_'+str(time.time())+'.png')
+                image_path = os.path.join(self.path,'snapshots/display_'+str(time.time())+'.png')
                 caster.create_dir(os.path.split(image_path)[0])
                 pygame.image.save(screen,image_path)
                 caster.cast_image(image_path,self.cc)
@@ -228,7 +228,11 @@ if __name__ == '__main__':
                     speaker.speak('I did not understand what you said. I will enable suggestions by default.')
                     Player(user_choice,True,cast)
                     
-                shutil.rmtree(os.path.join(os.path.split(os.path.realpath(__file__))[0],'snapshots'))
+                try:
+                    shutil.rmtree(os.path.join(os.path.split(os.path.realpath(__file__))[0],'snapshots'))
+                except:
+                    pass
+
                 speaker.speak('Would you like to play a new game? (yes or no): ')
                 rematch = listener.listen()
                 if 'no' in rematch.lower():
